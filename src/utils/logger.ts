@@ -16,14 +16,16 @@ export function setLogger(newLogger: Logger): void {
 }
 
 // Proxy handler
+// deno-lint-ignore ban-types
 const handler: ProxyHandler<{}> = {
   get(_target, prop, _receiver) {
-    if (logger && typeof prop === "string" && prop in logger) {
+    if (logger && typeof prop === 'string' && prop in logger) {
       return (...args: unknown[]) => {
         // Call the corresponding method on the logger if it exists
         (logger as Logger)[prop as keyof Logger](...args);
       };
     }
+
     // Default behavior for methods not in logger
     return () => {};
   },

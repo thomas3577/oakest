@@ -1,8 +1,22 @@
 {
-  "editor.tabSize": 2,
   "editor.formatOnSave": true,
-  "deno.enable": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.defaultFormatter": "denoland.vscode-deno",
+  "typescript.preferences.quoteStyle": "single",
   "deno.lint": true,
-  "deno.importMap": "./test/importMap.json",
-  "deno.config": "./tsconfig.json"
+  "deno.enable": true,
+  "deno.unstable": true,
+  "deno.config": "./deno.json",
+  "deno.codeLens.references": false,
+  "deno.codeLens.referencesAllFunctions": false,
+  "deno.internalDebug": true,
+  "search.exclude": {
+    "**/deno.lock": true
+  },
+  "cSpell.words": [
+    "injectables",
+    "oakest",
+    "paramtypes"
+  ]
 }

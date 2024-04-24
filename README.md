@@ -2,7 +2,7 @@
 
 NestJS-style decorators library for Deno's [oak](https://github.com/oakserver/oak).
 
-## TL;DR Key features:
+## TL;DR Key features
 
 - **Dependency Injection**: Simplify your code and testing process by injecting dependencies.
 - **Modular Structure**: Organize your code into modules for better scalability and maintainability.
@@ -94,7 +94,7 @@ Run your app and following endpoints will be available:
 
 ### Modules
 
-A module is a class annotated with a `@Module()` decorator. The `@Module()` decorator provides metadata that the application makes use of to organize the application structure.  
+A module is a class annotated with a `@Module()` decorator. The `@Module()` decorator provides metadata that the application makes use of to organize the application structure.
 Each application has at least one module, a root module, and each modules can have child modules.
 
 The `@Module()` decorator takes those options:
@@ -144,7 +144,7 @@ For http methods, you can use `@Get()`, `@Post()`, `@Put()`, `@Patch()`, `@Delet
 
 #### Request object
 
-Handlers often need access to the client request details.  
+Handlers often need access to the client request details.
 HHere's a example to access the request object using `@Req()` decorator.
 
 ```typescript
@@ -180,7 +180,7 @@ Below is a list of the provided decorators.
 
 ### Providers
 
-Providers are responsible for main business logic as services, repositories, factories, helpers, and so on.  
+Providers are responsible for main business logic as services, repositories, factories, helpers, and so on.
 The main idea of a provider is that it can be injected as a dependency. Depending on the environment, different implementations of a service can be provided.
 
 ```typescript

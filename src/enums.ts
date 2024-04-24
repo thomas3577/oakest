@@ -1,4 +1,4 @@
-export enum RouteParamtypes {
+export enum RouteParamTypes {
   REQUEST,
   CONTEXT,
   RESPONSE,

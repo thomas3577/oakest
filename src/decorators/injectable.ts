@@ -1,27 +1,21 @@
-import { Reflect } from '../deps.ts';
+import { Reflect } from '@reflect';
+import { InjectionOptions } from '@inject';
+import { Injectable as OriginalInjectable } from '@inject';
 
-import { InjectionOptions } from 'https://deno.land/x/inject@v0.1.2/decorators.ts';
-import { Injectable as OriginalInjectable } from 'https://deno.land/x/inject@v0.1.2/mod.ts';
 import { INJECTOR_INTERFACES_METADATA } from '../const.ts';
 
-export function Injectable({
-  implementing = [],
-  ...originalOptions
-}: {
-  implementing?: string | symbol | string[] | symbol[];
-} & InjectionOptions = {}): ClassDecorator {
-  const implementings = Array.isArray(implementing)
-    ? implementing
-    : [implementing];
+export type Implementing = string | symbol | string[] | symbol[];
+export type ImplementingOptions = { implementing?: Implementing };
+export type InjectableOptions = ImplementingOptions & InjectionOptions;
+
+export function Injectable({ implementing = [], ...originalOptions }: InjectableOptions = {}): ClassDecorator {
+  const implementations = Array.isArray(implementing) ? implementing : [implementing];
 
   return (target: any) => {
-    if (implementings.length > 0) {
-      Reflect.defineMetadata(
-        INJECTOR_INTERFACES_METADATA,
-        implementings,
-        target
-      );
+    if (implementations.length > 0) {
+      Reflect.defineMetadata(INJECTOR_INTERFACES_METADATA, implementations, target);
     }
+
     return OriginalInjectable({ ...originalOptions })(target);
   };
 }

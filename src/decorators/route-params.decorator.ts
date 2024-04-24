@@ -1,59 +1,57 @@
-import { ROUTE_ARGS_METADATA } from "../const.ts";
-import { Reflect } from "../deps.ts";
-import { RouteParamtypes } from "../enums/mod.ts";
-import { ParamData, RouteArgsMetadata } from "../interfaces/mod.ts";
-import { isNil, isString } from "../utils/router.util.ts";
+import { Reflect } from '@reflect';
+import { ROUTE_ARGS_METADATA } from '../const.ts';
+import { RouteParamTypes } from '../enums.ts';
+import { ParamData, RouteArgsMetadata } from '../types.ts';
+import { isNil, isString } from '../utils/router.util.ts';
 
-function createPipesRouteParamDecorator(paramtype: RouteParamtypes) {
-  return (data?: ParamData): ParameterDecorator =>
-    (target, key, index) => {
-      const args: RouteArgsMetadata[] =
-        Reflect.getMetadata(ROUTE_ARGS_METADATA, target, key) || [];
-      const hasParamData = isNil(data) || isString(data);
-      const paramData = hasParamData ? data : undefined;
+function createPipesRouteParamDecorator(paramType: RouteParamTypes) {
+  return (data?: ParamData): ParameterDecorator => (target, key, index) => {
+    const args: RouteArgsMetadata[] = Reflect.getMetadata(ROUTE_ARGS_METADATA, target, key as string | symbol) || [];
+    const hasParamData = isNil(data) || isString(data);
+    const paramData = hasParamData ? data : undefined;
 
-      args.push({
-        paramtype,
-        index,
-        data: paramData,
-      });
+    args.push({
+      paramType,
+      index,
+      data: paramData,
+    });
 
-      Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target, key);
-    };
+    Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target, key as string | symbol);
+  };
 }
 
 export function Request(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.REQUEST)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.REQUEST)(property);
 }
 
 export function Context(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.CONTEXT)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.CONTEXT)(property);
 }
 
 export function Response(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.RESPONSE)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.RESPONSE)(property);
 }
 
 export function Next(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.NEXT)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.NEXT)(property);
 }
 
 export function Query(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.QUERY)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.QUERY)(property);
 }
 
 export function Param(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.PARAM)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.PARAM)(property);
 }
 
 export function Body(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.BODY)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.BODY)(property);
 }
 
 export function Headers(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.HEADERS)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.HEADERS)(property);
 }
 
 export function IP(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamtypes.IP)(property);
+  return createPipesRouteParamDecorator(RouteParamTypes.IP)(property);
 }
