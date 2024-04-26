@@ -71,8 +71,6 @@ export const assignModule = (module: any): Middleware<Record<string, any>, Conte
   return router.routes();
 };
 
-const x = assignModule('');
-console.log(x);
 /**
  * Registers a decorator that can be added to a controller's
  * method. The handler will be called at runtime when the

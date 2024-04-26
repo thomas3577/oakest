@@ -14,9 +14,14 @@ class TestController {
 class RootModule {}
 class ChildModule {}
 
-Deno.test('run assignModule()', () => {
+Deno.test('run assignModule()', async () => {
   const option: CreateRouterOption = { controllers: [] };
-  Reflect.defineMetadata(MODULE_METADATA, option, RootModule.prototype);
+
+  // Workaround: sync is too fast? And no way to set test timeout (https://github.com/denoland/deno/issues/11133)
+  await new Promise((resolve) => {
+    Reflect.defineMetadata(MODULE_METADATA, option, RootModule.prototype);
+    resolve(null);
+  });
 
   const middleware = assignModule(RootModule);
   assertExists(middleware);
