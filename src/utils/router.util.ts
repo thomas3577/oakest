@@ -1,4 +1,4 @@
-import { Context, Next, Router, RouterContext } from '@oak/oak';
+import { Context, Middleware, Next, Router, RouterContext } from '@oak/oak';
 import { bootstrap, Reflect } from '@dx/inject';
 
 import { INJECTOR_INTERFACES_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA } from '../const.ts';
@@ -12,11 +12,7 @@ export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undef
 export const isString = (fn: any): fn is string => typeof fn === 'string';
 export const isNil = (obj: any): obj is null | undefined => isUndefined(obj) || obj === null;
 
-const createRouter = (
-  { controllers, providers = [], routePrefix }: CreateRouterOption,
-  prefix?: string,
-  router = new Router(),
-) => {
+const createRouter = ({ controllers, providers = [], routePrefix }: CreateRouterOption, prefix?: string, router = new Router()): Router<Record<string, any>> => {
   controllers.forEach((Controller) => {
     const requiredProviders = (Reflect.getMetadata('design:paramtypes', Object.getPrototypeOf(Controller)) || [])
       .map((requiredProvider: ClassConstructor, idx: number) => {
@@ -56,25 +52,27 @@ const createRouter = (
   return router;
 };
 
-const getRouter = (module: any, prefix?: string, router?: Router) => {
+const getRouter = (module: any, prefix?: string, router?: Router): Router<Record<string, any>> => {
   const mainModuleOption: CreateRouterOption = Reflect.getMetadata(
     MODULE_METADATA,
     module.prototype,
   );
 
-  const newRouter = createRouter(mainModuleOption, prefix, router);
+  const newRouter: Router<Record<string, any>> = createRouter(mainModuleOption, prefix, router);
 
   mainModuleOption.modules?.map((module) => getRouter(module, mainModuleOption.routePrefix, newRouter)) || [];
 
   return newRouter;
 };
 
-export const assignModule = (module: any) => {
-  const router = getRouter(module);
+export const assignModule = (module: any): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> => {
+  const router: Router<Record<string, any>> = getRouter(module);
 
   return router.routes();
 };
 
+const x = assignModule('');
+console.log(x);
 /**
  * Registers a decorator that can be added to a controller's
  * method. The handler will be called at runtime when the
@@ -99,7 +97,7 @@ export const registerMiddlewareMethodDecorator = (target: ClassConstructor, meth
  * @param {number} paramIndex - the index of the parameter
  * @return {(data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void} a function that takes optional data and returns a function that requires the param's handler as only parameter
  */
-export const registerCustomRouteParamDecorator = (target: ClassConstructor, methodName: string, paramIndex: number) => {
+export const registerCustomRouteParamDecorator = (target: ClassConstructor, methodName: string, paramIndex: number): (data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void => {
   return (data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => {
     const args: RouteArgsMetadata[] = Reflect.getMetadata(ROUTE_ARGS_METADATA, target, methodName) || [];
     const hasParamData = isNil(data) || isString(data);

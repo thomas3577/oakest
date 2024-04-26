@@ -13,7 +13,7 @@ export type ControllerOptions = {
   injectables: Array<string | symbol | null>;
 };
 
-export function Controller<T extends { new (...instance: any[]): object }>(options?: string | ControllerOptions) {
+export function Controller<T extends { new (...instance: any[]): object }>(options?: string | ControllerOptions): (fn: T) => any {
   const path: string | undefined = typeof options === 'string' ? options : options?.path;
   const injectables = typeof options === 'string' ? [] : options?.injectables || [];
 

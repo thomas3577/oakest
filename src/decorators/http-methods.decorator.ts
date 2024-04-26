@@ -2,14 +2,16 @@ import { Reflect } from '@dx/inject';
 import { ActionMetadata, HTTPMethods } from '../types.ts';
 import { METHOD_METADATA } from '../const.ts';
 
-export const Get = mappingMethod('get');
-export const Post = mappingMethod('post');
-export const Put = mappingMethod('put');
-export const Patch = mappingMethod('patch');
-export const Delete = mappingMethod('delete');
-export const All = mappingMethod('all');
+export const Get: HttpMethod = mappingMethod('get');
+export const Post: HttpMethod = mappingMethod('post');
+export const Put: HttpMethod = mappingMethod('put');
+export const Patch: HttpMethod = mappingMethod('patch');
+export const Delete: HttpMethod = mappingMethod('delete');
+export const All: HttpMethod = mappingMethod('all');
 
-function mappingMethod(method: HTTPMethods) {
+export type HttpMethod = (path?: string) => (target: unknown, functionName: string, _: PropertyDescriptor) => void;
+
+function mappingMethod(method: HTTPMethods): HttpMethod {
   return (path = '') => (target: unknown, functionName: string, _: PropertyDescriptor) => {
     const meta: ActionMetadata = {
       path,
