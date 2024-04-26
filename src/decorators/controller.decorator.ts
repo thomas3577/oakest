@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Reflect } from '@reflect';
+import { Reflect } from '@dx/inject';
 import logger from '../utils/logger.ts';
 import { ActionMetadata, RouteArgsMetadata } from '../types.ts';
 import { RouteParamTypes } from '../enums.ts';

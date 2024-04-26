@@ -1,6 +1,6 @@
 import { assertExists } from '@std/assert';
 import { Router } from '@oak/oak';
-import { Reflect } from '@reflect';
+import { Reflect } from '@dx/inject';
 
 import { MODULE_METADATA } from '../const.ts';
 import { CreateRouterOption } from '../types.ts';

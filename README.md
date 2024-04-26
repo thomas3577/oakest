@@ -36,11 +36,7 @@ Define controllers to handle HTTP endpoints
 
 ```typescript
 // ./controllers/util-controller.ts
-import {
-  Controller,
-  Get,
-  Headers,
-} from 'https://deno.land/x/oak_decorators/mod.ts';
+import { Controller, Get, Headers } from 'https://deno.land/x/oak_decorators/mod.ts';
 
 @Controller('util')
 export class UtilController {
@@ -148,11 +144,7 @@ Handlers often need access to the client request details.
 HHere's a example to access the request object using `@Req()` decorator.
 
 ```typescript
-import {
-  Controller,
-  Get,
-  Request,
-} from 'https://deno.land/x/oak_decorators/mod.ts';
+import { Controller, Get, Request } from 'https://deno.land/x/oak_decorators/mod.ts';
 
 @Controller('sample')
 export class SampleController {
@@ -230,7 +222,7 @@ export class UsersController {
 // ./sample.module.ts
 import { Module } from 'https://deno.land/x/oak_decorators/mod.ts';
 import { UsersController } from './sample.controller.ts';
-import { UserService, MockUserService } from './sample.service.ts';
+import { MockUserService, UserService } from './sample.service.ts';
 
 @Module({
   controllers: [UsersController],
@@ -304,12 +296,11 @@ Then a param decorator could be defined as follows:
 ```typescript
 export function JWT(propName?: string) {
   return function (targetClass: any, methodName: string, paramIndex: number) {
-    const handler = (ctx: Context) =>
-      propName ? ctx.state.jwtData?.[propName] : ctx.state.jwtData;
+    const handler = (ctx: Context) => propName ? ctx.state.jwtData?.[propName] : ctx.state.jwtData;
     registerCustomRouteParamDecorator(
       targetClass,
       methodName,
-      paramIndex
+      paramIndex,
     )(handler);
   };
 }
@@ -331,14 +322,11 @@ Params resolution is asynchronous, so it is also possible to do things like retr
 ```typescript
 export function SessionData() {
   return function (targetClass: any, methodName: string, paramIndex: number) {
-    const handler = (ctx: Context) =>
-      ctx.state.jwtData?.sid
-        ? await retrieveSession(ctx.state.jwtData?.sid)
-        : null;
+    const handler = (ctx: Context) => ctx.state.jwtData?.sid ? await retrieveSession(ctx.state.jwtData?.sid) : null;
     registerCustomRouteParamDecorator(
       targetClass,
       methodName,
-      paramIndex
+      paramIndex,
     )(handler);
   };
 }

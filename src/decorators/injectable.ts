@@ -1,6 +1,4 @@
-import { Reflect } from '@reflect';
-import { InjectionOptions } from '@inject';
-import { Injectable as OriginalInjectable } from '@inject';
+import { Injectable as OriginalInjectable, InjectionOptions, Reflect } from '@dx/inject';
 
 import { INJECTOR_INTERFACES_METADATA } from '../const.ts';
 

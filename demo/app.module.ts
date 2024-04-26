@@ -1,10 +1,10 @@
-import { Module } from "ork_decorators";
-import { AppController } from "./app.controller.ts";
-import { SampleModule } from "./sample/sample.module.ts";
+import { Module } from 'ork_decorators';
+import { AppController } from './app.controller.ts';
+import { SampleModule } from './sample/sample.module.ts';
 
 @Module({
   modules: [SampleModule],
   controllers: [AppController],
-  routePrefix: "v1",
+  routePrefix: 'v1',
 })
 export class AppModule {}
