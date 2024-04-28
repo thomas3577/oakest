@@ -1,4 +1,5 @@
 import { Reflect } from '@dx/inject';
+
 import { MODULE_METADATA } from '../const.ts';
 import { ClassConstructor, CreateRouterOption } from '../types.ts';
 
