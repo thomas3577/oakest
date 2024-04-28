@@ -1,4 +1,5 @@
-import { Module } from 'ork_decorators';
+import { Module } from '@dx/oakest';
+
 import { AppController } from './app.controller.ts';
 import { SampleModule } from './sample/sample.module.ts';
 

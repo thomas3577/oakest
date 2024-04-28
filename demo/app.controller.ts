@@ -1,4 +1,4 @@
-import { Controller, Get, Headers } from 'ork_decorators';
+import { Controller, Get, Headers } from '@dx/oakest';
 
 @Controller()
 export class AppController {

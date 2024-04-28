@@ -1,13 +1,14 @@
-import { Body, Controller, Get, IP, Param, Post, Query } from 'ork_decorators';
+import { Body, Controller, Get, IP, Param, Post, Query } from '@dx/oakest';
+
 import { SampleService } from './sample.service.ts';
 
 @Controller()
 export class SampleController {
-  constructor(private readonly sampleService: SampleService) {}
+  constructor(private readonly _sampleService: SampleService) {}
 
   @Get()
   get() {
-    return this.sampleService.get();
+    return this._sampleService.get();
   }
 
   @Post()
