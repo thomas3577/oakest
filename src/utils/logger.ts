@@ -16,7 +16,6 @@ export function setLogger(newLogger: Logger): void {
 }
 
 // Proxy handler
-// deno-lint-ignore ban-types
 const handler: ProxyHandler<{}> = {
   get(_target, prop, _receiver) {
     if (logger && typeof prop === 'string' && prop in logger) {

@@ -80,7 +80,7 @@ export const assignModule = (module: any): Middleware<Record<string, any>, Conte
  * @param methodName decorator's method name
  * @param handler decorator's handler
  */
-export const registerMiddlewareMethodDecorator = (target: ClassConstructor, methodName: string, handler: (ctx: Context, next: Next) => void) => {
+export const registerMiddlewareMethodDecorator = (target: ClassConstructor, methodName: string, handler: (ctx: Context, next: Next) => void): void => {
   const middleware = Reflect.getMetadata(MIDDLEWARE_METADATA, target, methodName) || [];
   middleware.push(handler);
 

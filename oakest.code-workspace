@@ -40,7 +40,9 @@
       "editor.defaultFormatter": "denoland.vscode-deno"
     },
     "cSpell.words": [
-      "oakest"
+      "injectables",
+      "oakest",
+      "paramtypes"
     ]
   }
 }
