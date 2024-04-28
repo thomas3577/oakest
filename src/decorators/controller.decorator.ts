@@ -1,10 +1,12 @@
 // deno-lint-ignore-file no-explicit-any
+import { Router, RouterContext } from '@oak/oak';
 import { Reflect } from '@dx/inject';
+
 import logger from '../utils/logger.ts';
 import { ActionMetadata, RouteArgsMetadata } from '../types.ts';
 import { RouteParamTypes } from '../enums.ts';
 import { CONTROLLER_METADATA, METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
-import { Router, RouterContext } from '@oak/oak';
+import { getQuery } from '../utils/helpers.ts';
 
 type Next = () => Promise<unknown>;
 
@@ -92,7 +94,7 @@ async function getContextData(args: RouteArgsMetadata, ctx: RouterContext<string
       return next;
     }
     case RouteParamTypes.QUERY: {
-      const query = helpers.getQuery(ctx);
+      const query = getQuery(ctx);
 
       return data ? query[data.toString()] : query;
     }
