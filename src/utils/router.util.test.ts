@@ -11,7 +11,9 @@ class TestController {
   route = new Router();
   init() {}
 }
+
 class RootModule {}
+
 class ChildModule {}
 
 Deno.test('run assignModule()', async () => {

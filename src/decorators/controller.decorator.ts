@@ -10,11 +10,15 @@ import { getQuery } from '../utils/helpers.ts';
 
 type Next = () => Promise<unknown>;
 
-export type ControllerOptions = {
+type ControllerOptions = {
   path?: string;
   injectables: Array<string | symbol | null>;
 };
 
+/**
+ * Controller decorator
+ * @param {string | ControllerOptions} options - Path for the controller
+ */
 export function Controller<T extends { new (...instance: any[]): object }>(options?: string | ControllerOptions): (fn: T) => any {
   const path: string | undefined = typeof options === 'string' ? options : options?.path;
   const injectables = typeof options === 'string' ? [] : options?.injectables || [];

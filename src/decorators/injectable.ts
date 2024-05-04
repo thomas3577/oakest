@@ -6,6 +6,10 @@ export type Implementing = string | symbol | string[] | symbol[];
 export type ImplementingOptions = { implementing?: Implementing };
 export type InjectableOptions = ImplementingOptions & InjectionOptions;
 
+/**
+ * Injectable decorator
+ * @param {ImplementingOptions} options - Implementing options
+ */
 export function Injectable({ implementing = [], ...originalOptions }: InjectableOptions = {}): ClassDecorator {
   const implementations = Array.isArray(implementing) ? implementing : [implementing];
 

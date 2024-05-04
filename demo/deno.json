@@ -1,7 +1,7 @@
 {
   "imports": {
     "@oak/oak": "jsr:@oak/oak@16.0.0",
-    "@dx/oakest": "../src/mod.ts"
+    "@dx/oakest": "../mod.ts"
   },
   "compilerOptions": {
     "strict": true,

@@ -65,6 +65,11 @@ const getRouter = (module: any, prefix?: string, router?: Router): Router<Record
   return newRouter;
 };
 
+/**
+ * Assigns a module to a router.
+ * @param module - the module to assign
+ * @returns {Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>>} the middleware
+ */
 export const assignModule = (module: any): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> => {
   const router: Router<Record<string, any>> = getRouter(module);
 
@@ -76,9 +81,9 @@ export const assignModule = (module: any): Middleware<Record<string, any>, Conte
  * method. The handler will be called at runtime when the
  * endpoint method is invoked with the Context and Next parameters.
  *
- * @param target decorator's target
- * @param methodName decorator's method name
- * @param handler decorator's handler
+ * @param {ClassConstructor} target decorator's target
+ * @param {string} methodName decorator's method name
+ * @param {(ctx: Context, next: Next) => void} handler decorator's handler
  */
 export const registerMiddlewareMethodDecorator = (target: ClassConstructor, methodName: string, handler: (ctx: Context, next: Next) => void): void => {
   const middleware = Reflect.getMetadata(MIDDLEWARE_METADATA, target, methodName) || [];
