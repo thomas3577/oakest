@@ -1,6 +1,7 @@
-import { Application, assignModule } from '@dx/oakest';
+import { Application } from "@oak/oak";
+import { assignModule } from "@dx/oakest";
 
-import { AppModule } from './app.module.ts';
+import { AppModule } from "./app.module.ts";
 
 const app = new Application();
 app.use(assignModule(AppModule));

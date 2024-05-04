@@ -1,0 +1,14 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "allowCompoundWords": true,
+  "ignorePaths": [
+    ".vscode",
+    ".git"
+  ],
+  "words": [
+    "injectables",
+    "oakest",
+    "paramtypes"
+  ]
+}

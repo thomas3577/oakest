@@ -1,5 +1,0 @@
-{
-  "imports": {
-    "@dx/oakest": "../src/mod.ts"
-  }
-}

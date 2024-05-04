@@ -1,0 +1,36 @@
+{
+  "imports": {
+    "@oak/oak": "jsr:@oak/oak@16.0.0",
+    "@dx/oakest": "../src/mod.ts"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "recommended"
+      ],
+      "include": [
+        "ban-untagged-todo",
+        "no-deprecated-deno-api"
+      ],
+      "exclude": [
+        "no-explicit-any",
+        "no-inferrable-types"
+      ]
+    }
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 360,
+    "indentWidth": 2,
+    "singleQuote": true,
+    "proseWrap": "preserve",
+    "exclude": [
+      ".vscode/**"
+    ]
+  }
+}
