@@ -19,8 +19,6 @@
     "deno.enable": true,
     "deno.unstable": true,
     "deno.config": "./deno.json",
-    "deno.codeLens.references": false,
-    "deno.codeLens.referencesAllFunctions": false,
     "deno.internalDebug": true,
     "deno.testing.args": [
       "--allow-read",
