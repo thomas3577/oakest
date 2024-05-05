@@ -53,10 +53,7 @@ const createRouter = ({ controllers, providers = [], routePrefix }: CreateRouter
 };
 
 const getRouter = (module: any, prefix?: string, router?: Router): Router<Record<string, any>> => {
-  const mainModuleOption: CreateRouterOption = Reflect.getMetadata(
-    MODULE_METADATA,
-    module.prototype,
-  );
+  const mainModuleOption: CreateRouterOption = Reflect.getMetadata(MODULE_METADATA, module.prototype);
 
   const newRouter: Router<Record<string, any>> = createRouter(mainModuleOption, prefix, router);
 
