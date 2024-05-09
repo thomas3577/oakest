@@ -1,5 +1,5 @@
 import { Application } from '@oak/oak';
-import { assignModule } from '@dx/oakest';
+import { assignModule } from '../mod.ts';
 
 import { AppModule } from './app.module.ts';
 

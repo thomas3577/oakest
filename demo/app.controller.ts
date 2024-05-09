@@ -1,4 +1,4 @@
-import { Controller, Get, Headers } from '@dx/oakest';
+import { Controller, Get, Headers } from '../mod.ts';
 
 @Controller()
 export class AppController {

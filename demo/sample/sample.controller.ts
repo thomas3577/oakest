@@ -1,4 +1,4 @@
-import { Body, Controller, Get, IP, Param, Post, Query } from '@dx/oakest';
+import { Body, Controller, Get, IP, Param, Post, Query } from '../../mod.ts';
 
 import { SampleService } from './sample.service.ts';
 

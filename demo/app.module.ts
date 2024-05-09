@@ -1,4 +1,4 @@
-import { Module } from '@dx/oakest';
+import { Module } from '../mod.ts';
 
 import { AppController } from './app.controller.ts';
 import { SampleModule } from './sample/sample.module.ts';

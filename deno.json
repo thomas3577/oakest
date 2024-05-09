@@ -5,7 +5,7 @@
     ".": "./mod.ts"
   },
   "tasks": {
-    "lock": "deno cache --lock=deno.lock --lock-write mod.ts src/**/*.*.ts"
+    "lock": "deno cache --lock=deno.lock --lock-write mod.ts **/*.*.ts"
   },
   "imports": {
     "@oak/oak": "jsr:@oak/oak@16.0.0",

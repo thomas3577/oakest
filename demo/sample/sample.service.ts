@@ -1,4 +1,4 @@
-import { Injectable } from '@dx/oakest';
+import { Injectable } from '../../mod.ts';
 
 @Injectable()
 export class SampleService {
