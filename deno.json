@@ -1,6 +1,6 @@
 {
   "name": "@dx/oakest",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "exports": {
     ".": "./mod.ts"
   },
@@ -8,9 +8,9 @@
     "lock": "deno cache --lock=deno.lock --lock-write mod.ts **/*.*.ts"
   },
   "imports": {
-    "@oak/oak": "jsr:@oak/oak@16.0.0",
-    "@std/assert": "jsr:@std/assert@0.224",
-    "@dx/inject": "jsr:@dx/inject@0.1.4"
+    "@oak/oak": "jsr:@oak/oak@16.1",
+    "@std/assert": "jsr:@std/assert@0.226",
+    "@dx/inject": "jsr:@dx/inject@0.1.7"
   },
   "publish": {
     "exclude": [
