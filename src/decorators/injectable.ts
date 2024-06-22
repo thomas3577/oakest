@@ -1,4 +1,4 @@
-import { Injectable as OriginalInjectable, InjectionOptions, Reflect } from '@dx/inject';
+import { InjectionOptions, Reflect, setInjectionMetadata } from '@dx/inject';
 
 import { INJECTOR_INTERFACES_METADATA } from '../const.ts';
 
@@ -10,14 +10,16 @@ export type InjectableOptions = ImplementingOptions & InjectionOptions;
  * Injectable decorator
  * @param {ImplementingOptions} options - Implementing options
  */
-export function Injectable({ implementing = [], ...originalOptions }: InjectableOptions = {}): ClassDecorator {
-  const implementations = Array.isArray(implementing) ? implementing : [implementing];
+export function Injectable({ implementing = [], isSingleton }: InjectableOptions = {}): ClassDecorator {
+  const implementings = Array.isArray(implementing) ? implementing : [implementing];
 
   return (target: any) => {
-    if (implementations.length > 0) {
-      Reflect.defineMetadata(INJECTOR_INTERFACES_METADATA, implementations, target);
+    if (implementings.length > 0) {
+      Reflect.defineMetadata(INJECTOR_INTERFACES_METADATA, implementings, target);
     }
 
-    return OriginalInjectable({ ...originalOptions })(target);
+    setInjectionMetadata(target, {
+      isSingleton: isSingleton !== false,
+    });
   };
 }
