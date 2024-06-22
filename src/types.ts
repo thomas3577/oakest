@@ -10,7 +10,7 @@ export interface ActionMetadata {
 }
 
 export interface CreateRouterOption {
-  controllers: ClassConstructor[];
+  controllers?: ClassConstructor[];
   providers?: ClassConstructor[];
   modules?: ClassConstructor[];
   routePrefix?: string;
