@@ -2,8 +2,8 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@dx/inject@0.1.7": "jsr:@dx/inject@0.1.7",
-      "jsr:@dx/reflect@0.2.7": "jsr:@dx/reflect@0.2.7",
+      "jsr:@dx/inject@0.1.11": "jsr:@dx/inject@0.1.11",
+      "jsr:@dx/reflect@0.2.8": "jsr:@dx/reflect@0.2.8",
       "jsr:@oak/commons@0.11": "jsr:@oak/commons@0.11.0",
       "jsr:@oak/oak@16.1": "jsr:@oak/oak@16.1.0",
       "jsr:@std/assert@0.223": "jsr:@std/assert@0.223.0",
@@ -24,18 +24,17 @@
       "jsr:@std/media-types@0.223": "jsr:@std/media-types@0.223.0",
       "jsr:@std/media-types@0.224": "jsr:@std/media-types@0.224.1",
       "jsr:@std/path@0.223": "jsr:@std/path@0.223.0",
-      "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:path-to-regexp@6.2.1": "npm:path-to-regexp@6.2.1"
     },
     "jsr": {
-      "@dx/inject@0.1.7": {
-        "integrity": "51e78e5bf68c6f4984c2018326c24b4ee39d2f7793d695dde0616546a0620ed6",
+      "@dx/inject@0.1.11": {
+        "integrity": "27442dc8adca84311024007c290d9cb4f9105d1e5cedf05636b7068704c62475",
         "dependencies": [
-          "jsr:@dx/reflect@0.2.7"
+          "jsr:@dx/reflect@0.2.8"
         ]
       },
-      "@dx/reflect@0.2.7": {
-        "integrity": "a74880817e763ba1cf8c2b76f3d17ea47174cace2c49f4ab647efe0e1314cd4f"
+      "@dx/reflect@0.2.8": {
+        "integrity": "7f497ccc140b25c72f3de5343e15955a49946e07f8255c5417e13aac9554f0bd"
       },
       "@oak/commons@0.11.0": {
         "integrity": "07702bfe5c07cd8144c422022994da1f9fea466b185824f4be63a2b1b1a65125",
@@ -134,10 +133,6 @@
       }
     },
     "npm": {
-      "@types/node@18.16.19": {
-        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
-        "dependencies": {}
-      },
       "path-to-regexp@6.2.1": {
         "integrity": "sha512-JLyh7xT1kizaEvcaXOQwOc2/Yhw6KZOvPf1S8401UyLk86CU79LN3vl7ztXGm/pZ+YjoyAJ4rxmHwbkBXJX+yw==",
         "dependencies": {}
@@ -147,7 +142,7 @@
   "remote": {},
   "workspace": {
     "dependencies": [
-      "jsr:@dx/inject@0.1.7",
+      "jsr:@dx/inject@0.1.11",
       "jsr:@oak/oak@16.1",
       "jsr:@std/assert@0.226"
     ]
