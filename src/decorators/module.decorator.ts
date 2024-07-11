@@ -1,10 +1,11 @@
 import { Reflect } from '@dx/inject';
 
 import { MODULE_METADATA } from '../const.ts';
-import { ClassConstructor, CreateRouterOption } from '../types.ts';
+import type { ClassConstructor, CreateRouterOption } from '../types.ts';
 
 /**
  * Module decorator
+ *
  * @param {CreateRouterOption} data - Module data
  */
 export function Module<T>(data: CreateRouterOption): (target: ClassConstructor<T>) => void {

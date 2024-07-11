@@ -2,7 +2,7 @@ import { Reflect } from '@dx/inject';
 
 import { ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
-import { ParamData, RouteArgsMetadata } from '../types.ts';
+import type { ParamData, RouteArgsMetadata } from '../types.ts';
 import { isNil, isString } from '../utils/router.util.ts';
 
 function createPipesRouteParamDecorator(paramType: RouteParamTypes) {
@@ -23,6 +23,7 @@ function createPipesRouteParamDecorator(paramType: RouteParamTypes) {
 
 /**
  * Request decorator
+ *
  * @param {string} property - Property for the request
  */
 export function Request(property?: string): ParameterDecorator {
@@ -33,7 +34,9 @@ export const Req = Request;
 
 /**
  * Context decorator
+ *
  * @param {string} property - Property for the context
+ *
  * @returns {ParameterDecorator}
  */
 export function Context(property?: string): ParameterDecorator {
@@ -44,7 +47,9 @@ export const Ctx = Context;
 
 /**
  * Response decorator
+ *
  * @param {string} property - Property for the response
+ *
  * @returns {ParameterDecorator}
  */
 export function Response(property?: string): ParameterDecorator {
@@ -55,7 +60,9 @@ export const Res = Response;
 
 /**
  * Next decorator
+ *
  * @param {string} property - Property for the next
+ *
  * @returns {ParameterDecorator}
  */
 export function Next(property?: string): ParameterDecorator {
@@ -64,7 +71,9 @@ export function Next(property?: string): ParameterDecorator {
 
 /**
  * Query decorator
+ *
  * @param {string} property - Property for the query
+ *
  * @returns {ParameterDecorator}
  */
 export function Query(property?: string): ParameterDecorator {
@@ -73,7 +82,9 @@ export function Query(property?: string): ParameterDecorator {
 
 /**
  * Param decorator
+ *
  * @param {string} property - Property for the param
+ *
  * @returns {ParameterDecorator}
  */
 export function Param(property?: string): ParameterDecorator {
@@ -82,7 +93,9 @@ export function Param(property?: string): ParameterDecorator {
 
 /**
  * Body decorator
+ *
  * @param {string} property - Property for the body
+ *
  * @returns {ParameterDecorator}
  */
 export function Body(property?: string): ParameterDecorator {
@@ -91,7 +104,9 @@ export function Body(property?: string): ParameterDecorator {
 
 /**
  * Headers decorator
+ *
  * @param {string} property - Property for the headers
+ *
  * @returns {ParameterDecorator}
  */
 export function Headers(property?: string): ParameterDecorator {
@@ -100,7 +115,9 @@ export function Headers(property?: string): ParameterDecorator {
 
 /**
  * IP decorator
+ *
  * @param {string} property - Property for the IP
+ *
  * @returns {ParameterDecorator}
  */
 export function IP(property?: string): ParameterDecorator {

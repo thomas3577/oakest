@@ -1,6 +1,6 @@
 {
   "name": "@dx/oakest",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "exports": {
     ".": "./mod.ts"
   },
@@ -10,8 +10,8 @@
   },
   "imports": {
     "@oak/oak": "jsr:@oak/oak@16.1",
-    "@std/assert": "jsr:@std/assert@0.226",
-    "@dx/inject": "jsr:@dx/inject@0.1.11"
+    "@std/assert": "jsr:@std/assert@1",
+    "@dx/inject": "jsr:@dx/inject@0.1.13"
   },
   "publish": {
     "exclude": [
@@ -26,22 +26,17 @@
     ]
   },
   "compilerOptions": {
-    "strict": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
   "lint": {
     "rules": {
-      "tags": [
-        "recommended"
-      ],
       "include": [
         "ban-untagged-todo",
         "no-deprecated-deno-api"
       ],
       "exclude": [
-        "no-explicit-any",
-        "no-inferrable-types"
+        "no-explicit-any"
       ]
     }
   },

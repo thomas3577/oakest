@@ -1,8 +1,9 @@
-import { Context, Middleware, Next, Router, RouterContext } from '@oak/oak';
+import { Router } from '@oak/oak';
+import type { Context, Middleware, Next, RouterContext } from '@oak/oak';
 import { bootstrap, Reflect } from '@dx/inject';
 
 import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
-import { ClassConstructor, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
+import type { ClassConstructor, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
 import { RouteParamTypes } from '../enums.ts';
 
 export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undefined';
@@ -67,7 +68,9 @@ const getProviders = (module: any, providers: ClassConstructor[] = []): ClassCon
 
 /**
  * Assigns a module to a router.
+ *
  * @param module - the module to assign
+ *
  * @returns {Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>>} the middleware
  */
 export const assignModule = (module: any): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> => {
@@ -98,6 +101,7 @@ export const registerMiddlewareMethodDecorator = (target: ClassConstructor, meth
  * @param {ClassConstructor} target - the target object
  * @param {string} methodName - the name of the method
  * @param {number} paramIndex - the index of the parameter
+ *
  * @return {(data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void} a function that takes optional data and returns a function that requires the param's handler as only parameter
  */
 export const registerCustomRouteParamDecorator = (target: ClassConstructor, methodName: string, paramIndex: number): (data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void => {

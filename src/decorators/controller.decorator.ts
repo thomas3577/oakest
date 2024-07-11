@@ -1,9 +1,9 @@
-// deno-lint-ignore-file no-explicit-any
-import { Router, RouterContext } from '@oak/oak';
+import { Router } from '@oak/oak';
+import type { RouterContext } from '@oak/oak';
 import { Reflect } from '@dx/inject';
 
 import logger from '../utils/logger.ts';
-import { ActionMetadata, RouteArgsMetadata } from '../types.ts';
+import type { ActionMetadata, RouteArgsMetadata } from '../types.ts';
 import { RouteParamTypes } from '../enums.ts';
 import { CONTROLLER_METADATA, METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 
@@ -16,6 +16,7 @@ type ControllerOptions = {
 
 /**
  * Controller decorator
+ *
  * @param {string | ControllerOptions} options - Path for the controller
  */
 export function Controller<T extends { new (...instance: any[]): object }>(options?: string | ControllerOptions): (fn: T) => any {

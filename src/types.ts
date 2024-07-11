@@ -1,5 +1,5 @@
-import { RouterContext } from '@oak/oak';
-import { RouteParamTypes } from './enums.ts';
+import type { RouterContext } from '@oak/oak';
+import type { RouteParamTypes } from './enums.ts';
 
 export type HTTPMethods = 'get' | 'put' | 'patch' | 'post' | 'delete' | 'all';
 

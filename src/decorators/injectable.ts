@@ -1,5 +1,5 @@
-import { InjectionOptions, Reflect, setInjectionMetadata } from '@dx/inject';
-
+import { Reflect, setInjectionMetadata } from '@dx/inject';
+import type { InjectionOptions } from '@dx/inject';
 import { INJECTOR_INTERFACES_METADATA } from '../const.ts';
 
 export type Implementing = string | symbol | string[] | symbol[];
@@ -8,6 +8,7 @@ export type InjectableOptions = ImplementingOptions & InjectionOptions;
 
 /**
  * Injectable decorator
+ *
  * @param {ImplementingOptions} options - Implementing options
  */
 export function Injectable({ implementing = [], isSingleton }: InjectableOptions = {}): ClassDecorator {

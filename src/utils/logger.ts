@@ -10,7 +10,11 @@ type Logger = {
 // Logger variable, initially null
 let logger: Logger | null = null;
 
-// Function to set the logger
+/**
+ * Function to set the logger
+ *
+ * @param {Logger} newLogger - the new logger
+ */
 export function setLogger(newLogger: Logger): void {
   logger = newLogger;
 }
