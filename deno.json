@@ -1,12 +1,12 @@
 {
   "name": "@dx/oakest",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "exports": {
     ".": "./mod.ts"
   },
   "tasks": {
     "demo": "deno run -A ./demo/main.ts",
-    "lock": "deno cache --lock=deno.lock --lock-write mod.ts **/*.*.ts"
+    "lock": "deno cache --lock=deno.lock mod.ts **/*.*.ts"
   },
   "imports": {
     "@oak/oak": "jsr:@oak/oak@16.1",
@@ -31,10 +31,6 @@
   },
   "lint": {
     "rules": {
-      "include": [
-        "ban-untagged-todo",
-        "no-deprecated-deno-api"
-      ],
       "exclude": [
         "no-explicit-any"
       ]

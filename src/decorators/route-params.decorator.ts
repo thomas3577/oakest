@@ -26,11 +26,9 @@ function createPipesRouteParamDecorator(paramType: RouteParamTypes) {
  *
  * @param {string} property - Property for the request
  */
-export function Request(property?: string): ParameterDecorator {
+export function Req(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.REQUEST)(property);
 }
-
-export const Req = Request;
 
 /**
  * Context decorator
@@ -39,11 +37,9 @@ export const Req = Request;
  *
  * @returns {ParameterDecorator}
  */
-export function Context(property?: string): ParameterDecorator {
+export function Ctx(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.CONTEXT)(property);
 }
-
-export const Ctx = Context;
 
 /**
  * Response decorator
@@ -52,11 +48,9 @@ export const Ctx = Context;
  *
  * @returns {ParameterDecorator}
  */
-export function Response(property?: string): ParameterDecorator {
+export function Res(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.RESPONSE)(property);
 }
-
-export const Res = Response;
 
 /**
  * Next decorator
