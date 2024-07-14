@@ -2,8 +2,8 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@dx/inject@0.1.13": "jsr:@dx/inject@0.1.13",
-      "jsr:@dx/reflect@0.2.8": "jsr:@dx/reflect@0.2.8",
+      "jsr:@dx/inject@0.1.14": "jsr:@dx/inject@0.1.14",
+      "jsr:@dx/reflect@0.2.14": "jsr:@dx/reflect@0.2.14",
       "jsr:@oak/commons@0.11": "jsr:@oak/commons@0.11.0",
       "jsr:@oak/oak@16.1": "jsr:@oak/oak@16.1.0",
       "jsr:@std/assert@0.223": "jsr:@std/assert@0.223.0",
@@ -29,14 +29,14 @@
       "npm:path-to-regexp@6.2.1": "npm:path-to-regexp@6.2.1"
     },
     "jsr": {
-      "@dx/inject@0.1.13": {
-        "integrity": "1a75a4ca66b8084a885f78016682054113a8631720cc8f66b98e93fa494ab800",
+      "@dx/inject@0.1.14": {
+        "integrity": "269bacb33a06355d245679762860ce22472e54f5e84e3e5c56888ecacc2a16c0",
         "dependencies": [
-          "jsr:@dx/reflect@0.2.8"
+          "jsr:@dx/reflect@0.2.14"
         ]
       },
-      "@dx/reflect@0.2.8": {
-        "integrity": "7f497ccc140b25c72f3de5343e15955a49946e07f8255c5417e13aac9554f0bd"
+      "@dx/reflect@0.2.14": {
+        "integrity": "53e1cb54e25170f43d90966679fcd7d6e0d27e23f4f1c869330d339576f446be"
       },
       "@oak/commons@0.11.0": {
         "integrity": "07702bfe5c07cd8144c422022994da1f9fea466b185824f4be63a2b1b1a65125",
@@ -151,7 +151,7 @@
   "remote": {},
   "workspace": {
     "dependencies": [
-      "jsr:@dx/inject@0.1.13",
+      "jsr:@dx/inject@0.1.14",
       "jsr:@oak/oak@16.1",
       "jsr:@std/assert@1"
     ]
