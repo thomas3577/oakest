@@ -1,4 +1,4 @@
-import type { RouterContext } from '@oak/oak';
+import type { Router, RouterContext } from '@oak/oak';
 import type { RouteParamTypes } from './enums.ts';
 
 export type HTTPMethods = 'get' | 'put' | 'patch' | 'post' | 'delete' | 'all';
@@ -18,6 +18,15 @@ export interface CreateRouterOption {
 
 export type ParamData = Record<string, unknown> | string | number;
 
+/**
+ * Controller base type
+ */
+export type ControllerClass = {
+  path?: string;
+  route?: Router;
+  init(routePrefix?: string): void;
+};
+
 export interface RouteArgsMetadata {
   paramType: RouteParamTypes;
   index: number;
@@ -26,3 +35,7 @@ export interface RouteArgsMetadata {
 }
 
 export type ClassConstructor<T = object> = new (...args: any[]) => T;
+
+export type OnModuleInit = {
+  onModuleInit(): Promise<void> | void;
+};

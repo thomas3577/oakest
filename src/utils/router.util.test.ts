@@ -3,8 +3,8 @@ import { Router } from '@oak/oak';
 import { Reflect } from '@dx/inject';
 
 import { MODULE_METADATA } from '../const.ts';
-import type { CreateRouterOption } from '../types.ts';
 import { assignModule } from './router.util.ts';
+import type { CreateRouterOption } from '../types.ts';
 
 class TestController {
   path = '';

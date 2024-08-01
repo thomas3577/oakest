@@ -3,9 +3,9 @@ import type { RouterContext } from '@oak/oak';
 import { Reflect } from '@dx/inject';
 
 import logger from '../utils/logger.ts';
-import type { ActionMetadata, RouteArgsMetadata } from '../types.ts';
 import { RouteParamTypes } from '../enums.ts';
 import { CONTROLLER_METADATA, METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
+import type { ActionMetadata, ControllerClass, RouteArgsMetadata } from '../types.ts';
 
 type Next = () => Promise<unknown>;
 
@@ -21,19 +21,19 @@ type ControllerOptions = {
  */
 export function Controller<T extends { new (...instance: any[]): object }>(options?: string | ControllerOptions): (fn: T) => any {
   const path: string | undefined = typeof options === 'string' ? options : options?.path;
-  const injectables = typeof options === 'string' ? [] : options?.injectables || [];
+  const injectables: Array<string | symbol | null> = typeof options === 'string' ? [] : options?.injectables || [];
 
-  return (fn: T): any => {
+  return (fn: T) => {
     Reflect.defineMetadata(CONTROLLER_METADATA, { injectables }, fn);
 
-    return class extends fn {
-      private _path?: string;
-      private _route?: Router;
+    return class extends fn implements ControllerClass {
+      #path?: string;
+      #route?: Router;
 
       init(routePrefix?: string) {
         const prefix = routePrefix ? `/${routePrefix}` : '';
 
-        this._path = prefix + (path ? `/${path}` : '');
+        this.#path = prefix + (path ? `/${path}` : '');
 
         const route = new Router();
         const list: ActionMetadata[] = Reflect.getMetadata(METHOD_METADATA, fn.prototype) || [];
@@ -64,15 +64,15 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
           logger.info(`Mapped: [${meta.method.toUpperCase()}]${fullPath}`);
         });
 
-        this._route = route;
+        this.#route = route;
       }
 
       get path(): string | undefined {
-        return this._path;
+        return this.#path;
       }
 
       get route(): Router | undefined {
-        return this._route;
+        return this.#route;
       }
     };
   };

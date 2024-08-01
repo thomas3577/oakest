@@ -1,7 +1,7 @@
 import { Reflect } from '@dx/inject';
 
-import type { ActionMetadata, HTTPMethods } from '../types.ts';
 import { METHOD_METADATA } from '../const.ts';
+import type { ActionMetadata, HTTPMethods } from '../types.ts';
 
 /**
  * HTTP Method GET

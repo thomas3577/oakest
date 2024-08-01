@@ -3,42 +3,45 @@ import type { Context, Middleware, Next, RouterContext } from '@oak/oak';
 import { bootstrap, Reflect } from '@dx/inject';
 
 import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
-import type { ClassConstructor, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
 import { RouteParamTypes } from '../enums.ts';
+import type { ClassConstructor, ControllerClass, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
 
 export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undefined';
 export const isString = (fn: any): fn is string => typeof fn === 'string';
 export const isNil = (obj: any): obj is null | undefined => isUndefined(obj) || obj === null;
 
-const createRouter = ({ controllers, routePrefix }: CreateRouterOption, providers: any[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
+const createRouter = ({ controllers, routePrefix }: CreateRouterOption, providers: ClassConstructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
   controllers?.forEach((Controller) => {
-    const requiredProviders: ClassConstructor<object>[] = (Reflect.getMetadata('design:paramtypes', Object.getPrototypeOf(Controller)) || [])
-      .map((requiredProvider: ClassConstructor, idx: number) => {
+    const RequiredProviders: ClassConstructor<object>[] = (Reflect.getMetadata('design:paramtypes', Object.getPrototypeOf(Controller)) || [])
+      .map((RequiredProvider: ClassConstructor, idx: number) => {
         const { injectables } = Reflect.getMetadata(CONTROLLER_METADATA, Controller) || { injectables: [] };
-        const provider = providers.find((provider) => {
+        const Provider: ClassConstructor | undefined = providers.find((provider) => {
           const implementing = Reflect.getMetadata(INJECTOR_INTERFACES_METADATA, provider) || [];
 
-          return (provider === requiredProvider || Object.prototype.isPrototypeOf.call(provider.prototype, requiredProvider.prototype) || implementing.includes(injectables[idx]));
+          return (provider === RequiredProvider || Object.prototype.isPrototypeOf.call(provider.prototype, RequiredProvider.prototype) || implementing.includes(injectables[idx]));
         });
 
-        if (!provider) {
-          throw new Error(`Provider of type ${requiredProvider.name} not found for controller: ${Object.getPrototypeOf(Controller).name}`);
+        if (!Provider) {
+          throw new Error(`Provider of type ${RequiredProvider.name} not found for controller: ${Object.getPrototypeOf(Controller).name}`);
         }
 
-        return provider;
+        return Provider;
       });
 
-    Reflect.defineMetadata('design:paramtypes', requiredProviders, Controller);
+    Reflect.defineMetadata('design:paramtypes', RequiredProviders, Controller);
 
-    const controller = bootstrap<any>(Controller);
+    const controller: ControllerClass = bootstrap<any>(Controller);
     const prefixFull: string | undefined = prefix ? prefix + (routePrefix ? `/${routePrefix}` : '') : routePrefix;
 
     controller.init(prefixFull);
 
-    const path = controller.path;
-    const route = controller.route;
+    const { path, route } = controller;
 
-    router.use(path, route.routes(), route.allowedMethods());
+    if (!route) {
+      throw new Error(`Controller ${Controller.name} has no route defined.`);
+    }
+
+    router.use(path ?? '', route.routes(), route.allowedMethods());
   });
 
   return router;
@@ -46,7 +49,7 @@ const createRouter = ({ controllers, routePrefix }: CreateRouterOption, provider
 
 const getRouter = (module: any, prefix?: string, router?: Router): Router<Record<string, any>> => {
   const mainModuleOption: CreateRouterOption = Reflect.getMetadata(MODULE_METADATA, module.prototype);
-  const providers = getProviders(module);
+  const providers: ClassConstructor[] = getProviders(module);
   const newRouter: Router<Record<string, any>> = createRouter(mainModuleOption, providers, prefix, router);
 
   mainModuleOption.modules?.forEach((module) => getRouter(module, mainModuleOption.routePrefix, newRouter)) || [];
