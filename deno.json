@@ -6,7 +6,7 @@
   },
   "tasks": {
     "demo": "deno run -A ./demo/main.ts",
-    "lock": "deno cache --lock=deno.lock **/*.*.ts"
+    "lock": "deno cache **/*.*.ts"
   },
   "imports": {
     "@dx/inject": "jsr:@dx/inject@0.1.15",
