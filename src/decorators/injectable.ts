@@ -1,10 +1,12 @@
-import { Reflect, setInjectionMetadata } from '@dx/inject';
+import { bootstrap, Reflect, setInjectionMetadata } from '@dx/inject';
 import type { InjectionOptions } from '@dx/inject';
 import { INJECTOR_INTERFACES_METADATA } from '../const.ts';
 
 export type Implementing = string | symbol | string[] | symbol[];
 export type ImplementingOptions = { implementing?: Implementing };
 export type InjectableOptions = ImplementingOptions & InjectionOptions;
+
+export { bootstrap as inject };
 
 /**
  * Injectable decorator

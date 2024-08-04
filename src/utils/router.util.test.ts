@@ -1,4 +1,4 @@
-import { assertExists } from '@std/assert';
+import { assertExists } from 'jsr:@std/assert@1.0.2';
 import { Router } from '@oak/oak';
 import { Reflect } from '@dx/inject';
 

@@ -4,7 +4,7 @@ import { bootstrap, Reflect } from '@dx/inject';
 
 import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
-import type { ClassConstructor, ControllerClass, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
+import type { ClassConstructor, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
 
 export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undefined';
 export const isString = (fn: any): fn is string => typeof fn === 'string';
@@ -30,7 +30,7 @@ const createRouter = ({ controllers, routePrefix }: CreateRouterOption, provider
 
     Reflect.defineMetadata('design:paramtypes', RequiredProviders, Controller);
 
-    const controller: ControllerClass = bootstrap<any>(Controller);
+    const controller = bootstrap<any>(Controller);
     const prefixFull: string | undefined = prefix ? prefix + (routePrefix ? `/${routePrefix}` : '') : routePrefix;
 
     controller.init(prefixFull);

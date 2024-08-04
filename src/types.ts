@@ -35,7 +35,3 @@ export interface RouteArgsMetadata {
 }
 
 export type ClassConstructor<T = object> = new (...args: any[]) => T;
-
-export type OnModuleInit = {
-  onModuleInit(): Promise<void> | void;
-};

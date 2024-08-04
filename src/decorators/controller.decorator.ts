@@ -1,8 +1,8 @@
 import { Router } from '@oak/oak';
 import type { RouterContext } from '@oak/oak';
 import { Reflect } from '@dx/inject';
+import * as log from '@std/log';
 
-import logger from '../utils/logger.ts';
 import { RouteParamTypes } from '../enums.ts';
 import { CONTROLLER_METADATA, METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import type { ActionMetadata, ControllerClass, RouteArgsMetadata } from '../types.ts';
@@ -56,12 +56,12 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
             if (context.response.writable) {
               context.response.body = result;
             } else {
-              logger.warn(`Response is not writable`);
+              log.warn(`Response is not writable`);
             }
           });
 
           const fullPath = this.path + (meta.path ? `/${meta.path}` : '');
-          logger.info(`Mapped: [${meta.method.toUpperCase()}]${fullPath}`);
+          log.info(`Mapped: [${meta.method.toUpperCase()}]${fullPath}`);
         });
 
         this.#route = route;
