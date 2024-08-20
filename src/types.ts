@@ -9,7 +9,7 @@ export interface ActionMetadata {
   functionName: string;
 }
 
-export interface CreateRouterOption {
+export interface ModuleOptions {
   controllers?: ClassConstructor[];
   providers?: ClassConstructor[];
   modules?: ClassConstructor[];

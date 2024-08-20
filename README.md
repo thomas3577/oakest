@@ -146,18 +146,17 @@ export class SampleController {
 
 Below is a list of the provided decorators.
 
-| name |
-| :--- |
-
-| `@Request()`
-| `@Response()`
-| `@Next()`
-| `@Query(key?: string)`
-| `@Param(key?: string)`
-| `@Body(key?: string)`
-| `@Headers(name?: string)`
-| `@Ip()`
-| `@Context()`
+| name                      |
+| :------------------------ |
+| `@Request()`              |
+| `@Response()`             |
+| `@Next()`                 |
+| `@Query(key?: string)`    |
+| `@Param(key?: string)`    |
+| `@Body(key?: string)`     |
+| `@Headers(name?: string)` |
+| `@Ip()`                   |
+| `@Context()`              |
 
 ### Providers
 
@@ -173,6 +172,7 @@ import db from './db-service.ts';
 export class UserService {
   async getAllUsers() {
     const { error, data: users } = await db.users.getAll();
+
     return { status: 'ok', data: users };
   }
 }
@@ -286,11 +286,8 @@ Then a param decorator could be defined as follows:
 export function JWT(propName?: string) {
   return function (targetClass: any, methodName: string, paramIndex: number) {
     const handler = (ctx: Context) => propName ? ctx.state.jwtData?.[propName] : ctx.state.jwtData;
-    registerCustomRouteParamDecorator(
-      targetClass,
-      methodName,
-      paramIndex,
-    )(handler);
+
+    registerCustomRouteParamDecorator(targetClass, methodName, paramIndex)(handler);
   };
 }
 ```
@@ -312,11 +309,8 @@ Params resolution is asynchronous, so it is also possible to do things like retr
 export function SessionData() {
   return function (targetClass: any, methodName: string, paramIndex: number) {
     const handler = (ctx: Context) => ctx.state.jwtData?.sid ? await retrieveSession(ctx.state.jwtData?.sid) : null;
-    registerCustomRouteParamDecorator(
-      targetClass,
-      methodName,
-      paramIndex,
-    )(handler);
+
+    registerCustomRouteParamDecorator(targetClass, methodName, paramIndex)(handler);
   };
 }
 ```

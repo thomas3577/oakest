@@ -1,15 +1,15 @@
 import { Reflect } from '@dx/inject';
 
 import { MODULE_METADATA } from '../const.ts';
-import type { ClassConstructor, CreateRouterOption } from '../types.ts';
+import type { ClassConstructor, ModuleOptions } from '../types.ts';
 
 /**
  * Module decorator
  *
- * @param {CreateRouterOption} data - Module data
+ * @param {ModuleOptions} options - Module options
  */
-export function Module<T>(data: CreateRouterOption): (target: ClassConstructor<T>) => void {
+export function Module<T>(options: ModuleOptions): (target: ClassConstructor<T>) => void {
   return (target: ClassConstructor<T>) => {
-    Reflect.defineMetadata(MODULE_METADATA, data, target.prototype);
+    Reflect.defineMetadata(MODULE_METADATA, options, target.prototype);
   };
 }

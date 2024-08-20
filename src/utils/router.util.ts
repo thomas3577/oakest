@@ -4,13 +4,13 @@ import { bootstrap, Reflect } from '@dx/inject';
 
 import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
-import type { ClassConstructor, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
+import type { ClassConstructor, ModuleOptions, RouteArgsMetadata } from '../types.ts';
 
 export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undefined';
 export const isString = (fn: any): fn is string => typeof fn === 'string';
 export const isNil = (obj: any): obj is null | undefined => isUndefined(obj) || obj === null;
 
-const createRouter = ({ controllers, routePrefix }: CreateRouterOption, providers: ClassConstructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
+const createRouter = ({ controllers, routePrefix }: ModuleOptions, providers: ClassConstructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
   controllers?.forEach((Controller) => {
     const RequiredProviders: ClassConstructor<object>[] = (Reflect.getMetadata('design:paramtypes', Object.getPrototypeOf(Controller)) || [])
       .map((RequiredProvider: ClassConstructor, idx: number) => {
@@ -48,7 +48,7 @@ const createRouter = ({ controllers, routePrefix }: CreateRouterOption, provider
 };
 
 const getRouter = (module: any, prefix?: string, router?: Router): Router<Record<string, any>> => {
-  const mainModuleOption: CreateRouterOption = Reflect.getMetadata(MODULE_METADATA, module.prototype);
+  const mainModuleOption: ModuleOptions = Reflect.getMetadata(MODULE_METADATA, module.prototype);
   const providers: ClassConstructor[] = getProviders(module);
   const newRouter: Router<Record<string, any>> = createRouter(mainModuleOption, providers, prefix, router);
 
@@ -58,7 +58,7 @@ const getRouter = (module: any, prefix?: string, router?: Router): Router<Record
 };
 
 const getProviders = (module: any, providers: ClassConstructor[] = []): ClassConstructor[] => {
-  const moduleOption: CreateRouterOption = Reflect.getMetadata(MODULE_METADATA, module.prototype);
+  const moduleOption: ModuleOptions = Reflect.getMetadata(MODULE_METADATA, module.prototype);
 
   providers = [...providers, ...(moduleOption.providers || [])];
 
@@ -105,21 +105,18 @@ export const registerMiddlewareMethodDecorator = (target: ClassConstructor, meth
  * @param {string} methodName - the name of the method
  * @param {number} paramIndex - the index of the parameter
  *
- * @return {(data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void} a function that takes optional data and returns a function that requires the param's handler as only parameter
+ * @return {(handler: (ctx: RouterContext<string>) => void) => void} a function that takes optional data and returns a function that requires the param's handler as only parameter
  */
-export const registerCustomRouteParamDecorator = (target: ClassConstructor, methodName: string, paramIndex: number): (data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void => {
-  return (data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => {
+export const registerCustomRouteParamDecorator = (target: ClassConstructor, methodName: string, paramIndex: number): (handler: (ctx: RouterContext<string>) => void) => void => {
+  return ((handler: (ctx: RouterContext<string>) => void) => {
     const args: RouteArgsMetadata[] = Reflect.getMetadata(ROUTE_ARGS_METADATA, target, methodName) || [];
-    const hasParamData = isNil(data) || isString(data);
-    const paramData = hasParamData ? data : undefined;
 
     args.push({
       paramType: RouteParamTypes.CUSTOM,
       index: paramIndex,
-      data: paramData,
       handler,
     });
 
     Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target, methodName);
-  };
+  });
 };

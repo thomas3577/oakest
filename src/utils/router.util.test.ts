@@ -4,7 +4,7 @@ import { Reflect } from '@dx/inject';
 
 import { MODULE_METADATA } from '../const.ts';
 import { assignModule } from './router.util.ts';
-import type { CreateRouterOption } from '../types.ts';
+import type { ModuleOptions } from '../types.ts';
 
 class TestController {
   path = '';
@@ -17,7 +17,7 @@ class RootModule {}
 class ChildModule {}
 
 Deno.test('run assignModule()', async () => {
-  const option: CreateRouterOption = { controllers: [] };
+  const option: ModuleOptions = { controllers: [] };
 
   // Workaround: sync is too fast? And no way to set test timeout (https://github.com/denoland/deno/issues/11133)
   await new Promise((resolve) => {
@@ -30,7 +30,7 @@ Deno.test('run assignModule()', async () => {
 });
 
 Deno.test('run assignModule() with routePrefix & controllers', () => {
-  const option: CreateRouterOption = {
+  const option: ModuleOptions = {
     controllers: [TestController],
     routePrefix: 'test',
   };
@@ -41,12 +41,12 @@ Deno.test('run assignModule() with routePrefix & controllers', () => {
 });
 
 Deno.test('run assignModule() with modules', () => {
-  const option: CreateRouterOption = {
+  const option: ModuleOptions = {
     controllers: [],
     modules: [ChildModule],
     routePrefix: 'test',
   };
-  const childOption: CreateRouterOption = {
+  const childOption: ModuleOptions = {
     controllers: [TestController],
     routePrefix: 'test2',
   };
