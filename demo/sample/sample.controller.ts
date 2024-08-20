@@ -6,13 +6,13 @@ import { SampleService } from './sample.service.ts';
 @Controller()
 export class SampleController {
   constructor(
-    private readonly _sampleService: SampleService,
-    private readonly _sharedService: SharedService,
+    private sampleService: SampleService,
+    private sharedService: SharedService,
   ) {}
 
   @Get()
   get() {
-    return this._sampleService.get();
+    return this.sampleService.get();
   }
 
   @Post()
@@ -27,6 +27,6 @@ export class SampleController {
 
   @Get('shared')
   getShared() {
-    return this._sharedService.content;
+    return this.sharedService.content;
   }
 }

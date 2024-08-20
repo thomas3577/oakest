@@ -4,7 +4,7 @@ import { SharedService } from './shared/shared.service.ts';
 
 @Controller()
 export class AppController {
-  constructor(private readonly _sharedService: SharedService) {}
+  constructor(private sharedService: SharedService) {}
 
   @Get()
   get(@Headers('user-agent') userAgent: string) {
@@ -13,6 +13,6 @@ export class AppController {
 
   @Get('shared')
   getShared() {
-    return this._sharedService.content;
+    return this.sharedService.content;
   }
 }
