@@ -50,11 +50,9 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
                 .map(async (data) => await getContextData(data, context, next)),
             );
 
-            const result = await (this as any)[meta.functionName](...inputs);
-            if (result === undefined) return;
-
+            const body = await (this as any)[meta.functionName](...inputs);
             if (context.response.writable) {
-              context.response.body = result;
+              context.response.body = body;
             } else {
               log.warn(`Response is not writable`);
             }
