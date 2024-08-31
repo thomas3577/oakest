@@ -2,10 +2,10 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@dx/inject@0.1.15": "jsr:@dx/inject@0.1.15",
+      "jsr:@dx/inject@0.1.16": "jsr:@dx/inject@0.1.16",
       "jsr:@dx/reflect@0.2.14": "jsr:@dx/reflect@0.2.14",
       "jsr:@oak/commons@0.11": "jsr:@oak/commons@0.11.0",
-      "jsr:@oak/oak@16.1": "jsr:@oak/oak@16.1.0",
+      "jsr:@oak/oak@16.1.0": "jsr:@oak/oak@16.1.0",
       "jsr:@std/assert@0.223": "jsr:@std/assert@0.223.0",
       "jsr:@std/assert@0.226": "jsr:@std/assert@0.226.0",
       "jsr:@std/assert@1.0.2": "jsr:@std/assert@1.0.2",
@@ -18,14 +18,14 @@
       "jsr:@std/crypto@0.224": "jsr:@std/crypto@0.224.0",
       "jsr:@std/encoding@1.0.0-rc.2": "jsr:@std/encoding@1.0.0-rc.2",
       "jsr:@std/encoding@^0.223.0": "jsr:@std/encoding@0.223.0",
-      "jsr:@std/fmt@^1.0.0-rc.1": "jsr:@std/fmt@1.0.0-rc.1",
-      "jsr:@std/fs@^1.0.0-rc.5": "jsr:@std/fs@1.0.0-rc.6",
+      "jsr:@std/fmt@^1.0.1": "jsr:@std/fmt@1.0.1",
+      "jsr:@std/fs@^1.0.2": "jsr:@std/fs@1.0.2",
       "jsr:@std/http@0.223": "jsr:@std/http@0.223.0",
       "jsr:@std/http@0.224": "jsr:@std/http@0.224.5",
-      "jsr:@std/internal@^1.0.1": "jsr:@std/internal@1.0.1",
+      "jsr:@std/internal@^1.0.1": "jsr:@std/internal@1.0.2",
       "jsr:@std/io@0.223": "jsr:@std/io@0.223.0",
-      "jsr:@std/io@^0.224.3": "jsr:@std/io@0.224.3",
-      "jsr:@std/log@0.224.5": "jsr:@std/log@0.224.5",
+      "jsr:@std/io@^0.224.6": "jsr:@std/io@0.224.6",
+      "jsr:@std/log@0.224.6": "jsr:@std/log@0.224.6",
       "jsr:@std/media-types@0.223": "jsr:@std/media-types@0.223.0",
       "jsr:@std/media-types@0.224": "jsr:@std/media-types@0.224.1",
       "jsr:@std/path@0.223": "jsr:@std/path@0.223.0",
@@ -33,8 +33,8 @@
       "npm:path-to-regexp@6.2.1": "npm:path-to-regexp@6.2.1"
     },
     "jsr": {
-      "@dx/inject@0.1.15": {
-        "integrity": "49bc2f44c6a92e7d457d917e24bbb0faf50c4112abf2df9fc9d0f15b567fd210",
+      "@dx/inject@0.1.16": {
+        "integrity": "7ea32059f295a4161dae7f7c7e385b77acdfa9ddb0ffadebf691b395b747482b",
         "dependencies": [
           "jsr:@dx/reflect@0.2.14"
         ]
@@ -106,11 +106,11 @@
       "@std/encoding@1.0.0-rc.2": {
         "integrity": "160d7674a20ebfbccdf610b3801fee91cf6e42d1c106dd46bbaf46e395cd35ef"
       },
-      "@std/fmt@1.0.0-rc.1": {
-        "integrity": "3dbbd12f1704c62b5bd33c9ff928c8df47cd5c75f6637201a8c21298b28e43bc"
+      "@std/fmt@1.0.1": {
+        "integrity": "ef76c37faa7720faa8c20fd8cc74583f9b1e356dfd630c8714baa716a45856ab"
       },
-      "@std/fs@1.0.0-rc.6": {
-        "integrity": "289d4844694b016b15a3d9e7559f5a7ad47c8a5ef83e612a35629ae217f6ebf6"
+      "@std/fs@1.0.2": {
+        "integrity": "af57555c7a224a6f147d5cced5404692974f7a628ced8eda67e0d22d92d474ec"
       },
       "@std/http@0.223.0": {
         "integrity": "15ab8a0c5a7e9d5be017a15b01600f20f66602ceec48b378939fa24fcec522aa",
@@ -128,21 +128,24 @@
       "@std/internal@1.0.1": {
         "integrity": "6f8c7544d06a11dd256c8d6ba54b11ed870aac6c5aeafff499892662c57673e6"
       },
+      "@std/internal@1.0.2": {
+        "integrity": "f4cabe2021352e8bfc24e6569700df87bf070914fc38d4b23eddd20108ac4495"
+      },
       "@std/io@0.223.0": {
         "integrity": "2d8c3c2ab3a515619b90da2c6ff5ea7b75a94383259ef4d02116b228393f84f1",
         "dependencies": [
           "jsr:@std/bytes@^0.223.0"
         ]
       },
-      "@std/io@0.224.3": {
-        "integrity": "b402edeb99c6b3778d9ae3e9927bc9085b170b41e5a09bbb7064ab2ee394ae2f"
+      "@std/io@0.224.6": {
+        "integrity": "eefe034a370be34daf066c8634dd645635d099bb21eccf110f0bdc28d9040891"
       },
-      "@std/log@0.224.5": {
-        "integrity": "4612a45189438441bbd923a4cad1cce5c44c6c4a039195a3e8d831ce38894eee",
+      "@std/log@0.224.6": {
+        "integrity": "c34e7b69fe84b2152ce2b0a1b5e211b26e6a1ce6a6b68a217b9342fd13ed95a4",
         "dependencies": [
-          "jsr:@std/fmt@^1.0.0-rc.1",
-          "jsr:@std/fs@^1.0.0-rc.5",
-          "jsr:@std/io@^0.224.3"
+          "jsr:@std/fmt@^1.0.1",
+          "jsr:@std/fs@^1.0.2",
+          "jsr:@std/io@^0.224.6"
         ]
       },
       "@std/media-types@0.223.0": {
@@ -172,9 +175,9 @@
   "remote": {},
   "workspace": {
     "dependencies": [
-      "jsr:@dx/inject@0.1.15",
-      "jsr:@oak/oak@16.1",
-      "jsr:@std/log@0.224.5"
+      "jsr:@dx/inject@0.1.16",
+      "jsr:@oak/oak@16.1.0",
+      "jsr:@std/log@0.224.6"
     ]
   }
 }

@@ -1,5 +1,6 @@
 import { bootstrap, Reflect, setInjectionMetadata } from '@dx/inject';
 import type { InjectionOptions } from '@dx/inject';
+
 import { INJECTOR_INTERFACES_METADATA } from '../const.ts';
 
 export type Implementing = string | symbol | string[] | symbol[];
@@ -11,12 +12,12 @@ export { bootstrap as inject };
 /**
  * Injectable decorator
  *
- * @param {ImplementingOptions} options - Implementing options
+ * @param {InjectableOptions} options - Injectable options
  */
 export function Injectable({ implementing = [], isSingleton }: InjectableOptions = {}): ClassDecorator {
   const implementings = Array.isArray(implementing) ? implementing : [implementing];
 
-  return (target: any) => {
+  return (target: any): void => {
     if (implementings.length > 0) {
       Reflect.defineMetadata(INJECTOR_INTERFACES_METADATA, implementings, target);
     }

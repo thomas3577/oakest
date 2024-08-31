@@ -2,7 +2,7 @@ import { Reflect } from '@dx/inject';
 
 import { ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
-import { isNil, isString } from '../utils/router.util.ts';
+import { isNil, isString } from '../utils.ts';
 import type { ParamData, RouteArgsMetadata } from '../types.ts';
 
 function createPipesRouteParamDecorator(paramType: RouteParamTypes) {

@@ -51,7 +51,7 @@ export const All: HttpMethod = mappingMethod('all');
 export type HttpMethod = (path?: string) => (target: unknown, functionName: string, _: PropertyDescriptor) => void;
 
 function mappingMethod(method: HTTPMethods): HttpMethod {
-  return (path = '') => (target: unknown, functionName: string, _: PropertyDescriptor) => {
+  return (path = '') => (target: unknown, functionName: string, _: PropertyDescriptor): void => {
     const meta: ActionMetadata = {
       path,
       method,
