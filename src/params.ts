@@ -14,7 +14,7 @@ import { RouteParamTypes } from './enums.ts';
  *
  * @return {(handler: (ctx: RouterContext<string>) => void) => void} a function that takes optional data and returns a function that requires the param's handler as only parameter
  */
-export const registerCustomRouteParamDecorator = (target: Constructor, methodName: string, paramIndex: number): (handler: (ctx: RouterContext<string>) => void) => void => {
+export function registerCustomRouteParamDecorator(target: Constructor, methodName: string, paramIndex: number): (handler: (ctx: RouterContext<string>) => void) => void {
   return ((handler: (ctx: RouterContext<string>) => void) => {
     const args: RouteArgsMetadata[] = Reflect.getMetadata(ROUTE_ARGS_METADATA, target, methodName) || [];
 
@@ -26,4 +26,4 @@ export const registerCustomRouteParamDecorator = (target: Constructor, methodNam
 
     Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target, methodName);
   });
-};
+}

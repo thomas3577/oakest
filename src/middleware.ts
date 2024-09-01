@@ -12,9 +12,9 @@ import { MIDDLEWARE_METADATA } from './const.ts';
  * @param {string} methodName decorator's method name
  * @param {(ctx: Context, next: Next) => void} handler decorator's handler
  */
-export const registerMiddlewareMethodDecorator = (target: Constructor, methodName: string, handler: (ctx: Context, next: Next) => void): void => {
+export function registerMiddlewareMethodDecorator(target: Constructor, methodName: string, handler: (ctx: Context, next: Next) => void): void {
   const middleware = Reflect.getMetadata(MIDDLEWARE_METADATA, target, methodName) || [];
   middleware.push(handler);
 
   Reflect.defineMetadata(MIDDLEWARE_METADATA, middleware, target, methodName);
-};
+}

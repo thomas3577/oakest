@@ -10,8 +10,8 @@ import { getRouter } from './router.ts';
  *
  * @returns {Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>>} the middleware
  */
-export const assignModule = (module: Constructor): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> => {
+export function assignModule(module: Constructor): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> {
   const router: Router<Record<string, any>> = getRouter(module);
 
   return router.routes();
-};
+}
