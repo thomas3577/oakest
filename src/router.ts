@@ -1,9 +1,9 @@
-import { Router } from '@oak/oak';
 import type { Constructor } from '@dx/inject';
-import { bootstrap, Reflect } from '@dx/inject';
+import { Router } from '@oak/oak';
+import { bootstrap } from '@dx/inject';
 
-import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MODULE_METADATA } from './const.ts';
 import type { ModuleOptions } from './types.ts';
+import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MODULE_METADATA } from './const.ts';
 
 const createRouter = ({ controllers, routePrefix }: ModuleOptions, providers: Constructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
   controllers?.forEach((Controller) => {

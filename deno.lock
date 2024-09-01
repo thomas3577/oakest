@@ -2,13 +2,13 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@dx/inject@0.1.16": "jsr:@dx/inject@0.1.16",
-      "jsr:@dx/reflect@0.2.14": "jsr:@dx/reflect@0.2.14",
+      "jsr:@dx/inject@0.1.17": "jsr:@dx/inject@0.1.17",
       "jsr:@oak/commons@0.11": "jsr:@oak/commons@0.11.0",
       "jsr:@oak/oak@16.1.0": "jsr:@oak/oak@16.1.0",
       "jsr:@std/assert@0.223": "jsr:@std/assert@0.223.0",
       "jsr:@std/assert@0.226": "jsr:@std/assert@0.226.0",
       "jsr:@std/assert@1.0.2": "jsr:@std/assert@1.0.2",
+      "jsr:@std/assert@1.0.3": "jsr:@std/assert@1.0.3",
       "jsr:@std/assert@^0.223.0": "jsr:@std/assert@0.223.0",
       "jsr:@std/assert@^0.224.0": "jsr:@std/assert@0.224.0",
       "jsr:@std/bytes@0.223": "jsr:@std/bytes@0.223.0",
@@ -23,6 +23,7 @@
       "jsr:@std/http@0.223": "jsr:@std/http@0.223.0",
       "jsr:@std/http@0.224": "jsr:@std/http@0.224.5",
       "jsr:@std/internal@^1.0.1": "jsr:@std/internal@1.0.2",
+      "jsr:@std/internal@^1.0.2": "jsr:@std/internal@1.0.2",
       "jsr:@std/io@0.223": "jsr:@std/io@0.223.0",
       "jsr:@std/io@^0.224.6": "jsr:@std/io@0.224.6",
       "jsr:@std/log@0.224.6": "jsr:@std/log@0.224.6",
@@ -30,17 +31,15 @@
       "jsr:@std/media-types@0.224": "jsr:@std/media-types@0.224.1",
       "jsr:@std/path@0.223": "jsr:@std/path@0.223.0",
       "npm:@types/node": "npm:@types/node@18.16.19",
-      "npm:path-to-regexp@6.2.1": "npm:path-to-regexp@6.2.1"
+      "npm:path-to-regexp@6.2.1": "npm:path-to-regexp@6.2.1",
+      "npm:reflect-metadata@0.2.2": "npm:reflect-metadata@0.2.2"
     },
     "jsr": {
-      "@dx/inject@0.1.16": {
-        "integrity": "7ea32059f295a4161dae7f7c7e385b77acdfa9ddb0ffadebf691b395b747482b",
+      "@dx/inject@0.1.17": {
+        "integrity": "45868f86689a156ce378c7d5bbe3febac9125c5cdf220986e2e1c826c6274dec",
         "dependencies": [
-          "jsr:@dx/reflect@0.2.14"
+          "npm:reflect-metadata@0.2.2"
         ]
-      },
-      "@dx/reflect@0.2.14": {
-        "integrity": "53e1cb54e25170f43d90966679fcd7d6e0d27e23f4f1c869330d339576f446be"
       },
       "@oak/commons@0.11.0": {
         "integrity": "07702bfe5c07cd8144c422022994da1f9fea466b185824f4be63a2b1b1a65125",
@@ -79,6 +78,12 @@
         "integrity": "ccacec332958126deaceb5c63ff8b4eaf9f5ed0eac9feccf124110435e59e49c",
         "dependencies": [
           "jsr:@std/internal@^1.0.1"
+        ]
+      },
+      "@std/assert@1.0.3": {
+        "integrity": "b0d03ce1ced880df67132eea140623010d415848df66f6aa5df76507ca7c26d8",
+        "dependencies": [
+          "jsr:@std/internal@^1.0.2"
         ]
       },
       "@std/bytes@0.223.0": {
@@ -169,13 +174,17 @@
       "path-to-regexp@6.2.1": {
         "integrity": "sha512-JLyh7xT1kizaEvcaXOQwOc2/Yhw6KZOvPf1S8401UyLk86CU79LN3vl7ztXGm/pZ+YjoyAJ4rxmHwbkBXJX+yw==",
         "dependencies": {}
+      },
+      "reflect-metadata@0.2.2": {
+        "integrity": "sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==",
+        "dependencies": {}
       }
     }
   },
   "remote": {},
   "workspace": {
     "dependencies": [
-      "jsr:@dx/inject@0.1.16",
+      "jsr:@dx/inject@0.1.17",
       "jsr:@oak/oak@16.1.0",
       "jsr:@std/log@0.224.6"
     ]

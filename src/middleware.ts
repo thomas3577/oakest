@@ -1,6 +1,5 @@
 import type { Context, Next } from '@oak/oak';
 import type { Constructor } from '@dx/inject';
-import { Reflect } from '@dx/inject';
 
 import { MIDDLEWARE_METADATA } from './const.ts';
 

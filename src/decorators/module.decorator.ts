@@ -1,8 +1,7 @@
-import { Reflect } from '@dx/inject';
 import type { Constructor } from '@dx/inject';
 
-import { MODULE_METADATA } from '../const.ts';
 import type { ModuleOptions } from '../types.ts';
+import { MODULE_METADATA } from '../const.ts';
 
 /**
  * Module decorator

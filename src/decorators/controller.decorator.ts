@@ -1,11 +1,10 @@
 import { Router } from '@oak/oak';
 import type { Next, RouterContext } from '@oak/oak';
-import { Reflect } from '@dx/inject';
 import * as log from '@std/log';
 
+import type { ActionMetadata, ControllerClass, ControllerOptions, RouteArgsMetadata } from '../types.ts';
 import { RouteParamTypes } from '../enums.ts';
 import { CONTROLLER_METADATA, METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
-import type { ActionMetadata, ControllerClass, ControllerOptions, RouteArgsMetadata } from '../types.ts';
 
 /**
  * Controller decorator

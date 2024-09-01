@@ -1,10 +1,9 @@
 import type { RouterContext } from '@oak/oak';
 import type { Constructor } from '@dx/inject';
-import { Reflect } from '@dx/inject';
 
+import type { RouteArgsMetadata } from './types.ts';
 import { ROUTE_ARGS_METADATA } from './const.ts';
 import { RouteParamTypes } from './enums.ts';
-import type { RouteArgsMetadata } from './types.ts';
 
 /**
  * Registers a custom route parameter decorator.

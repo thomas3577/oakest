@@ -1,10 +1,11 @@
-import { assertExists } from 'jsr:@std/assert@1.0.2';
-import { Router } from '@oak/oak';
-import { Reflect } from '@dx/inject';
+import 'npm:reflect-metadata@0.2.2';
 
+import { assertExists } from 'jsr:@std/assert@1.0.3';
+import { Router } from '@oak/oak';
+
+import type { ModuleOptions } from './types.ts';
 import { MODULE_METADATA } from './const.ts';
 import { assignModule } from './module.ts';
-import type { ModuleOptions } from './types.ts';
 
 class TestController {
   path = '';
