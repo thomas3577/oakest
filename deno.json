@@ -10,8 +10,8 @@
   },
   "imports": {
     "@dx/inject": "jsr:@dx/inject@0.1.17",
-    "@oak/oak": "jsr:@oak/oak@16.1.0",
-    "@std/log": "jsr:@std/log@0.224.6"
+    "@oak/oak": "jsr:@oak/oak@17.0.0",
+    "@std/log": "jsr:@std/log@0.224.7"
   },
   "publish": {
     "exclude": [
