@@ -1,5 +1,3 @@
-import { Reflect } from '@dx/inject';
-
 import { METHOD_METADATA } from '../const.ts';
 import type { ActionMetadata, HTTPMethods } from '../types.ts';
 
@@ -48,10 +46,10 @@ export const All: HttpMethod = mappingMethod('all');
 /**
  * HTTP Method
  */
-export type HttpMethod = (path?: string) => (target: unknown, functionName: string, _: PropertyDescriptor) => void;
+export type HttpMethod = (path?: string) => (target: object, functionName: string, _: PropertyDescriptor) => void;
 
 function mappingMethod(method: HTTPMethods): HttpMethod {
-  return (path = '') => (target: unknown, functionName: string, _: PropertyDescriptor) => {
+  return (path = '') => (target: object, functionName: string, _: PropertyDescriptor) => {
     const meta: ActionMetadata = {
       path,
       method,
@@ -62,7 +60,7 @@ function mappingMethod(method: HTTPMethods): HttpMethod {
   };
 }
 
-function addMetadata<T>(value: T, target: unknown, key: symbol): void {
+function addMetadata<T>(value: T, target: object, key: symbol): void {
   const list = Reflect.getMetadata(key, target);
   if (list) {
     list.push(value);

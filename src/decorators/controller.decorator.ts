@@ -1,6 +1,5 @@
 import { Router } from '@oak/oak';
 import type { RouterContext } from '@oak/oak';
-import { Reflect } from '@dx/inject';
 import * as log from '@std/log';
 
 import { RouteParamTypes } from '../enums.ts';

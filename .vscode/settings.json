@@ -6,7 +6,6 @@
   "typescript.preferences.quoteStyle": "single",
   "deno.lint": true,
   "deno.enable": true,
-  "deno.unstable": true,
   "deno.config": "./deno.json",
   "deno.testing.args": [
     "--allow-read",

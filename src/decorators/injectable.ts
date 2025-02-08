@@ -1,5 +1,6 @@
-import { bootstrap, Reflect, setInjectionMetadata } from '@dx/inject';
+import { bootstrap, setInjectionMetadata } from '@dx/inject';
 import type { InjectionOptions } from '@dx/inject';
+
 import { INJECTOR_INTERFACES_METADATA } from '../const.ts';
 
 export type Implementing = string | symbol | string[] | symbol[];

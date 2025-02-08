@@ -1,17 +1,19 @@
 {
   "name": "@dx/oakest",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "exports": {
     ".": "./mod.ts"
   },
   "tasks": {
     "demo": "deno run -A ./demo/main.ts",
-    "lock": "deno cache **/*.*.ts"
+    "lock": "deno cache **/*.*.ts",
+    "update": "deno outdated --update --latest"
   },
   "imports": {
-    "@dx/inject": "jsr:@dx/inject@0.1.15",
-    "@oak/oak": "jsr:@oak/oak@16.1",
-    "@std/log": "jsr:@std/log@0.224.5"
+    "@dx/inject": "jsr:@dx/inject@0.1.18",
+    "@oak/oak": "jsr:@oak/oak@17.1.4",
+    "@std/log": "jsr:@std/log@0.224.14",
+    "@npm/reflect-metadata": "npm:reflect-metadata@0.2.2"
   },
   "publish": {
     "exclude": [

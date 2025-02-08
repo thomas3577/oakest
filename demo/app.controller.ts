@@ -1,5 +1,6 @@
 // deno-lint-ignore-file verbatim-module-syntax
 import { Controller, Get, Headers } from '../mod.ts';
+
 import { SharedService } from './shared/shared.service.ts';
 
 @Controller()

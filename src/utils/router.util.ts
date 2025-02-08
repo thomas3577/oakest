@@ -1,6 +1,6 @@
 import { Router } from '@oak/oak';
 import type { Context, Middleware, Next, RouterContext } from '@oak/oak';
-import { bootstrap, Reflect } from '@dx/inject';
+import { bootstrap } from '@dx/inject';
 
 import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';

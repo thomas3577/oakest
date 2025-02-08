@@ -1,4 +1,5 @@
 import { Module } from '../../mod.ts';
+
 import { SharedService } from './shared.service.ts';
 
 @Module({
