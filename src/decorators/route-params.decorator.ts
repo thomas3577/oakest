@@ -23,6 +23,8 @@ function createPipesRouteParamDecorator(paramType: RouteParamTypes) {
  * Request decorator
  *
  * @param {string} property - Property for the request
+ *
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function Req(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.REQUEST)(property);
@@ -33,7 +35,7 @@ export function Req(property?: string): ParameterDecorator {
  *
  * @param {string} property - Property for the context
  *
- * @returns {ParameterDecorator}
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function Ctx(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.CONTEXT)(property);
@@ -44,7 +46,7 @@ export function Ctx(property?: string): ParameterDecorator {
  *
  * @param {string} property - Property for the response
  *
- * @returns {ParameterDecorator}
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function Res(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.RESPONSE)(property);
@@ -55,7 +57,7 @@ export function Res(property?: string): ParameterDecorator {
  *
  * @param {string} property - Property for the next
  *
- * @returns {ParameterDecorator}
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function Next(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.NEXT)(property);
@@ -66,7 +68,7 @@ export function Next(property?: string): ParameterDecorator {
  *
  * @param {string} property - Property for the query
  *
- * @returns {ParameterDecorator}
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function Query(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.QUERY)(property);
@@ -77,7 +79,7 @@ export function Query(property?: string): ParameterDecorator {
  *
  * @param {string} property - Property for the param
  *
- * @returns {ParameterDecorator}
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function Param(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.PARAM)(property);
@@ -88,7 +90,7 @@ export function Param(property?: string): ParameterDecorator {
  *
  * @param {string} property - Property for the body
  *
- * @returns {ParameterDecorator}
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function Body(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.BODY)(property);
@@ -99,7 +101,7 @@ export function Body(property?: string): ParameterDecorator {
  *
  * @param {string} property - Property for the headers
  *
- * @returns {ParameterDecorator}
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function Headers(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.HEADERS)(property);
@@ -110,7 +112,7 @@ export function Headers(property?: string): ParameterDecorator {
  *
  * @param {string} property - Property for the IP
  *
- * @returns {ParameterDecorator}
+ * @returns {ParameterDecorator} - The request decorator
  */
 export function IP(property?: string): ParameterDecorator {
   return createPipesRouteParamDecorator(RouteParamTypes.IP)(property);

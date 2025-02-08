@@ -22,14 +22,14 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
   const path: string | undefined = typeof options === 'string' ? options : options?.path;
   const injectables: Array<string | symbol | null> = typeof options === 'string' ? [] : options?.injectables || [];
 
-  return (fn: T) => {
+  const result = (fn: T) => {
     Reflect.defineMetadata(CONTROLLER_METADATA, { injectables }, fn);
 
     return class extends fn implements ControllerClass {
       #path?: string;
       #route?: Router;
 
-      init(routePrefix?: string) {
+      init(routePrefix?: string): void {
         const prefix = routePrefix ? `/${routePrefix}` : '';
 
         this.#path = prefix + (path ? `/${path}` : '');
@@ -59,8 +59,7 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
             }
           });
 
-          const fullPath = this.path + (meta.path ? `/${meta.path}` : '');
-          log.info(`Mapped: [${meta.method.toUpperCase()}]${fullPath}`);
+          logMapping(meta, this.path);
         });
 
         this.#route = route;
@@ -75,9 +74,30 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
       }
     };
   };
+
+  return result;
 }
 
-async function getContextData(args: RouteArgsMetadata, ctx: RouterContext<string>, next: Next) {
+function logMapping(meta: ActionMetadata, path?: string): void {
+  const fullPath = path + (meta.path ? `/${meta.path}` : '');
+  const methodName = `${meta.method.toUpperCase()}`.padStart(6);
+
+  log.info(`${methodName} ${fullPath}`);
+}
+
+type TContextData =
+  | RouterContext<string, Record<string, any>, Record<string, any>>
+  | Request
+  | Response
+  | Next
+  | URLSearchParams
+  | Record<string, any>
+  | URLSearchParams
+  | string
+  | null
+  | undefined;
+
+async function getContextData(args: RouteArgsMetadata, ctx: RouterContext<string>, next: Next): Promise<TContextData> {
   const { paramType, data } = args;
   const req = ctx.request;
   const res = ctx.response;

@@ -10,9 +10,19 @@ export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undef
 export const isString = (fn: any): fn is string => typeof fn === 'string';
 export const isNil = (obj: any): obj is null | undefined => isUndefined(obj) || obj === null;
 
-const createRouter = ({ controllers, routePrefix }: CreateRouterOption, providers: ClassConstructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
+const controllerNames: string[] = [];
+
+const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
+  const { controllers, routePrefix } = moduleOptions;
+
   controllers?.forEach((Controller) => {
-    const RequiredProviders: ClassConstructor<object>[] = (Reflect.getMetadata('design:paramtypes', Object.getPrototypeOf(Controller)) || [])
+    const ControllerTarget = Object.getPrototypeOf(Controller);
+    if (controllerNames.includes(ControllerTarget.name)) {
+      return;
+    }
+
+    controllerNames.push(ControllerTarget.name);
+    const RequiredProviders: ClassConstructor<object>[] = (Reflect.getMetadata('design:paramtypes', ControllerTarget) || [])
       .map((RequiredProvider: ClassConstructor, idx: number) => {
         const { injectables } = Reflect.getMetadata(CONTROLLER_METADATA, Controller) || { injectables: [] };
         const Provider: ClassConstructor | undefined = providers.find((provider) => {
@@ -47,17 +57,17 @@ const createRouter = ({ controllers, routePrefix }: CreateRouterOption, provider
   return router;
 };
 
-const getRouter = (module: any, prefix?: string, router?: Router): Router<Record<string, any>> => {
-  const mainModuleOption: CreateRouterOption = Reflect.getMetadata(MODULE_METADATA, module.prototype);
+const getRouter = (module: ClassConstructor, prefix?: string, router?: Router): Router<Record<string, any>> => {
+  const moduleOption: CreateRouterOption = Reflect.getMetadata(MODULE_METADATA, module.prototype);
   const providers: ClassConstructor[] = getProviders(module);
-  const newRouter: Router<Record<string, any>> = createRouter(mainModuleOption, providers, prefix, router);
+  const newRouter: Router<Record<string, any>> = createRouter(moduleOption, providers, prefix, router);
 
-  mainModuleOption.modules?.forEach((module) => getRouter(module, mainModuleOption.routePrefix, newRouter)) || [];
+  moduleOption.modules?.forEach((module) => getRouter(module, moduleOption.routePrefix, newRouter)) || [];
 
   return newRouter;
 };
 
-const getProviders = (module: any, providers: ClassConstructor[] = []): ClassConstructor[] => {
+const getProviders = (module: ClassConstructor, providers: ClassConstructor[] = []): ClassConstructor[] => {
   const moduleOption: CreateRouterOption = Reflect.getMetadata(MODULE_METADATA, module.prototype);
 
   providers = [...providers, ...(moduleOption.providers || [])];
@@ -72,14 +82,15 @@ const getProviders = (module: any, providers: ClassConstructor[] = []): ClassCon
 /**
  * Assigns a module to a router.
  *
- * @param module - the module to assign
+ * @param {ClassConstructor} module - the module to assign
  *
  * @returns {Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>>} the middleware
  */
-export const assignModule = (module: any): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> => {
+export const assignModule = (module: ClassConstructor): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> => {
   const router: Router<Record<string, any>> = getRouter(module);
+  const routes = router.routes();
 
-  return router.routes();
+  return routes;
 };
 
 /**
@@ -87,9 +98,9 @@ export const assignModule = (module: any): Middleware<Record<string, any>, Conte
  * method. The handler will be called at runtime when the
  * endpoint method is invoked with the Context and Next parameters.
  *
- * @param {ClassConstructor} target decorator's target
- * @param {string} methodName decorator's method name
- * @param {(ctx: Context, next: Next) => void} handler decorator's handler
+ * @param {ClassConstructor} target - decorator's target
+ * @param {string} methodName - decorator's method name
+ * @param {(ctx: Context, next: Next) => void} handler - decorator's handler
  */
 export const registerMiddlewareMethodDecorator = (target: ClassConstructor, methodName: string, handler: (ctx: Context, next: Next) => void): void => {
   const middleware = Reflect.getMetadata(MIDDLEWARE_METADATA, target, methodName) || [];
@@ -105,7 +116,7 @@ export const registerMiddlewareMethodDecorator = (target: ClassConstructor, meth
  * @param {string} methodName - the name of the method
  * @param {number} paramIndex - the index of the parameter
  *
- * @return {(data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void} a function that takes optional data and returns a function that requires the param's handler as only parameter
+ * @returns {(data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void} a function that takes optional data and returns a function that requires the param's handler as only parameter
  */
 export const registerCustomRouteParamDecorator = (target: ClassConstructor, methodName: string, paramIndex: number): (data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => void => {
   return (data?: ParamData) => (handler: (ctx: RouterContext<string>) => void) => {
