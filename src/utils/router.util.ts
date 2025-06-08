@@ -4,7 +4,7 @@ import { bootstrap } from '@dx/inject';
 
 import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
-import type { ClassConstructor, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
+import type { ClassConstructor, ControllerClass, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
 
 export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undefined';
 export const isString = (fn: any): fn is string => typeof fn === 'string';
@@ -15,13 +15,14 @@ const controllerNames: string[] = [];
 const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
   const { controllers, routePrefix } = moduleOptions;
 
-  controllers?.forEach((Controller) => {
+  controllers?.forEach((Controller: ClassConstructor<unknown>) => {
     const ControllerTarget = Object.getPrototypeOf(Controller);
     if (controllerNames.includes(ControllerTarget.name)) {
       return;
     }
 
     controllerNames.push(ControllerTarget.name);
+
     const RequiredProviders: ClassConstructor<object>[] = (Reflect.getMetadata('design:paramtypes', ControllerTarget) || [])
       .map((RequiredProvider: ClassConstructor, idx: number) => {
         const { injectables } = Reflect.getMetadata(CONTROLLER_METADATA, Controller) || { injectables: [] };
@@ -40,9 +41,9 @@ const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstru
 
     Reflect.defineMetadata('design:paramtypes', RequiredProviders, Controller);
 
-    const controller = bootstrap<any>(Controller);
     const prefixFull: string | undefined = prefix ? prefix + (routePrefix ? `/${routePrefix}` : '') : routePrefix;
 
+    const controller: ControllerClass = bootstrap<ControllerClass>(Controller as unknown as new (...args: any[]) => ControllerClass);
     controller.init(prefixFull);
 
     const { path, route } = controller;
