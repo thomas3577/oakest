@@ -1,6 +1,6 @@
 import '@npm/reflect-metadata';
 
-import { assertExists } from 'jsr:@std/assert@1.0.2';
+import { assertExists } from '@std/assert';
 import { Router } from '@oak/oak';
 
 import { MODULE_METADATA } from '../const.ts';

@@ -1,6 +1,6 @@
 {
   "name": "@dx/oakest",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "exports": {
     ".": "./mod.ts"
   },
@@ -11,8 +11,9 @@
   },
   "imports": {
     "@dx/inject": "jsr:@dx/inject@0.1.21",
-    "@oak/oak": "jsr:@oak/oak@17.1.5",
+    "@oak/oak": "jsr:@oak/oak@17.1.6",
     "@std/log": "jsr:@std/log@0.224.14",
+    "@std/assert": "jsr:@std/assert@1.0.14",
     "@npm/reflect-metadata": "npm:reflect-metadata@0.2.2"
   },
   "publish": {

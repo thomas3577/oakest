@@ -3,8 +3,9 @@
   "specifiers": {
     "jsr:@dx/inject@0.1.21": "0.1.21",
     "jsr:@oak/commons@1": "1.0.1",
-    "jsr:@oak/oak@17.1.5": "17.1.5",
-    "jsr:@std/assert@1": "1.0.13",
+    "jsr:@oak/oak@17.1.6": "17.1.6",
+    "jsr:@std/assert@1": "1.0.14",
+    "jsr:@std/assert@1.0.14": "1.0.14",
     "jsr:@std/assert@1.0.2": "1.0.2",
     "jsr:@std/bytes@1": "1.0.6",
     "jsr:@std/crypto@1": "1.0.5",
@@ -14,11 +15,11 @@
     "jsr:@std/fs@^1.0.11": "1.0.11",
     "jsr:@std/http@1": "1.0.20",
     "jsr:@std/internal@^1.0.1": "1.0.10",
-    "jsr:@std/internal@^1.0.9": "1.0.10",
+    "jsr:@std/internal@^1.0.10": "1.0.10",
     "jsr:@std/io@~0.225.2": "0.225.2",
     "jsr:@std/log@0.224.14": "0.224.14",
     "jsr:@std/media-types@1": "1.1.0",
-    "jsr:@std/path@1": "1.1.1",
+    "jsr:@std/path@1": "1.1.2",
     "npm:@types/node@*": "18.16.19",
     "npm:path-to-regexp@^6.3.0": "6.3.0",
     "npm:reflect-metadata@0.2.2": "0.2.2"
@@ -41,8 +42,8 @@
         "jsr:@std/media-types"
       ]
     },
-    "@oak/oak@17.1.5": {
-      "integrity": "676263340dcfd069fb422b4274b4f75f7048a68e605dece6a2897ccfe669e7cc",
+    "@oak/oak@17.1.6": {
+      "integrity": "c7eef2eec733fba8e72b679bba3b8cf2fceccf5ef489a8b8fb43571908c0335d",
       "dependencies": [
         "jsr:@oak/commons",
         "jsr:@std/assert@1",
@@ -59,8 +60,11 @@
         "jsr:@std/internal@^1.0.1"
       ]
     },
-    "@std/assert@1.0.13": {
-      "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29"
+    "@std/assert@1.0.14": {
+      "integrity": "68d0d4a43b365abc927f45a9b85c639ea18a9fab96ad92281e493e4ed84abaa4",
+      "dependencies": [
+        "jsr:@std/internal@^1.0.10"
+      ]
     },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
@@ -100,10 +104,10 @@
     "@std/media-types@1.1.0": {
       "integrity": "c9d093f0c05c3512932b330e3cc1fe1d627b301db33a4c2c2185c02471d6eaa4"
     },
-    "@std/path@1.1.1": {
-      "integrity": "fe00026bd3a7e6a27f73709b83c607798be40e20c81dde655ce34052fd82ec76",
+    "@std/path@1.1.2": {
+      "integrity": "c0b13b97dfe06546d5e16bf3966b1cadf92e1cc83e56ba5476ad8b498d9e3038",
       "dependencies": [
-        "jsr:@std/internal@^1.0.9"
+        "jsr:@std/internal@^1.0.10"
       ]
     }
   },
@@ -121,7 +125,8 @@
   "workspace": {
     "dependencies": [
       "jsr:@dx/inject@0.1.21",
-      "jsr:@oak/oak@17.1.5",
+      "jsr:@oak/oak@17.1.6",
+      "jsr:@std/assert@1.0.14",
       "jsr:@std/log@0.224.14",
       "npm:reflect-metadata@0.2.2"
     ]
