@@ -1,7 +1,7 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@dx/inject@0.1.21": "0.1.21",
+    "jsr:@dx/inject@0.1.22": "0.1.22",
     "jsr:@oak/commons@1": "1.0.1",
     "jsr:@oak/oak@17.2.0": "17.2.0",
     "jsr:@std/assert@1": "1.0.18",
@@ -23,8 +23,8 @@
     "npm:reflect-metadata@0.2.2": "0.2.2"
   },
   "jsr": {
-    "@dx/inject@0.1.21": {
-      "integrity": "2ef942a786c9bfdfec291588111496835b4996762328927667a8c394a8ece2a9",
+    "@dx/inject@0.1.22": {
+      "integrity": "114edc141980480a6da8690209b953520695590f04e50768a607bbc78afe467c",
       "dependencies": [
         "npm:reflect-metadata"
       ]
@@ -116,7 +116,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@dx/inject@0.1.21",
+      "jsr:@dx/inject@0.1.22",
       "jsr:@oak/oak@17.2.0",
       "jsr:@std/assert@1.0.18",
       "jsr:@std/log@0.224.14",
