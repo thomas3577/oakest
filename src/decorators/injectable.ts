@@ -1,13 +1,11 @@
-import { bootstrap, setInjectionMetadata } from '@dx/inject';
-import type { InjectionOptions } from '@dx/inject';
-
-import { INJECTOR_INTERFACES_METADATA } from '../const.ts';
+import { INJECTABLE_OPTIONS_METADATA, INJECTOR_INTERFACES_METADATA } from '../const.ts';
+import { inject } from '../utils/injector.util.ts';
 
 export type Implementing = string | symbol | string[] | symbol[];
 export type ImplementingOptions = { implementing?: Implementing };
-export type InjectableOptions = ImplementingOptions & InjectionOptions;
+export type InjectableOptions = ImplementingOptions & { isSingleton?: boolean };
 
-export { bootstrap as inject };
+export { inject };
 
 /**
  * Injectable decorator
@@ -22,8 +20,8 @@ export function Injectable({ implementing = [], isSingleton }: InjectableOptions
       Reflect.defineMetadata(INJECTOR_INTERFACES_METADATA, implementings, target);
     }
 
-    setInjectionMetadata(target, {
+    Reflect.defineMetadata(INJECTABLE_OPTIONS_METADATA, {
       isSingleton: isSingleton !== false,
-    });
+    }, target);
   };
 }

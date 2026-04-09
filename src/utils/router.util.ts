@@ -1,10 +1,10 @@
 import { Router } from '@oak/oak';
 import type { Context, Middleware, Next, RouterContext } from '@oak/oak';
-import { bootstrap } from '@dx/inject';
 
-import { CONTROLLER_METADATA, INJECTOR_INTERFACES_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
+import { CONTROLLER_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
 import type { ClassConstructor, ControllerClass, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
+import { createInjector } from './injector.util.ts';
 
 export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undefined';
 export const isString = (fn: any): fn is string => typeof fn === 'string';
@@ -14,6 +14,7 @@ const controllerNames: string[] = [];
 
 const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
   const { controllers, routePrefix } = moduleOptions;
+  const injector = createInjector(providers);
 
   controllers?.forEach((Controller: ClassConstructor<unknown>) => {
     const ControllerTarget = Object.getPrototypeOf(Controller);
@@ -23,27 +24,9 @@ const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstru
 
     controllerNames.push(ControllerTarget.name);
 
-    const RequiredProviders: ClassConstructor<object>[] = (Reflect.getMetadata('design:paramtypes', ControllerTarget) || [])
-      .map((RequiredProvider: ClassConstructor, idx: number) => {
-        const { injectables } = Reflect.getMetadata(CONTROLLER_METADATA, Controller) || { injectables: [] };
-        const Provider: ClassConstructor | undefined = providers.find((provider) => {
-          const implementing = Reflect.getMetadata(INJECTOR_INTERFACES_METADATA, provider) || [];
-
-          return (provider === RequiredProvider || Object.prototype.isPrototypeOf.call(provider.prototype, RequiredProvider.prototype) || implementing.includes(injectables[idx]));
-        });
-
-        if (!Provider) {
-          throw new Error(`Provider of type ${RequiredProvider.name} not found for controller: ${Object.getPrototypeOf(Controller).name}`);
-        }
-
-        return Provider;
-      });
-
-    Reflect.defineMetadata('design:paramtypes', RequiredProviders, Controller);
-
     const prefixFull: string | undefined = prefix ? prefix + (routePrefix ? `/${routePrefix}` : '') : routePrefix;
-
-    const controller: ControllerClass = bootstrap<ControllerClass>(Controller as unknown as new (...args: any[]) => ControllerClass);
+    const { injectables } = Reflect.getMetadata(CONTROLLER_METADATA, Controller) || { injectables: [] };
+    const controller: ControllerClass = injector.resolve(Controller as unknown as new (...args: any[]) => ControllerClass, injectables);
     controller.init(prefixFull);
 
     const { path, route } = controller;

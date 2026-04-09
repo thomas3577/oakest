@@ -4,3 +4,4 @@ export const MODULE_METADATA = Symbol('module');
 export const CONTROLLER_METADATA = Symbol('controller');
 export const MIDDLEWARE_METADATA = Symbol('middleware');
 export const INJECTOR_INTERFACES_METADATA = Symbol('injectorInterfaces');
+export const INJECTABLE_OPTIONS_METADATA = Symbol('injectableOptions');
