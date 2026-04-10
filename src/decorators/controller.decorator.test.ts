@@ -8,6 +8,18 @@ import { Controller } from './controller.decorator.ts';
 import { registerMiddlewareMethodDecorator } from '../utils/router.util.ts';
 import type { ControllerClass } from '../types.ts';
 
+function RuntimeMiddleware<This extends object, Args extends unknown[], Return>(
+  _value: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+) {
+  registerMiddlewareMethodDecorator(context, async (ctx, next) => {
+    middlewareEvents.push('middleware:before');
+    ctx.response.headers.set('x-middleware', 'ran');
+    await next();
+    middlewareEvents.push('middleware:after');
+  });
+}
+
 const mountController = (controller: { path?: string; route?: Router; init(routePrefix?: string): void }, routePrefix?: string) => {
   controller.init(routePrefix);
 
@@ -55,6 +67,7 @@ const middlewareEvents: string[] = [];
 
 @Controller('tasks')
 class RuntimeController {
+  @RuntimeMiddleware
   @Get(':id', [query<string | null>('filter'), param<string>('id'), custom<string>((routeContext, data) => `${routeContext.params.id}:${String(data)}`, 'extra')])
   index(
     filter: string | null,
@@ -70,15 +83,6 @@ class RuntimeController {
     };
   }
 }
-
-const runtimeControllerPrototype = Object.getPrototypeOf(RuntimeController.prototype);
-
-registerMiddlewareMethodDecorator(runtimeControllerPrototype, 'index', async (ctx, next) => {
-  middlewareEvents.push('middleware:before');
-  ctx.response.headers.set('x-middleware', 'ran');
-  await next();
-  middlewareEvents.push('middleware:after');
-});
 
 @Controller('empty')
 class UndefinedResultController {

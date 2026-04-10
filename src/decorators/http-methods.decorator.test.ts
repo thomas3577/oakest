@@ -4,8 +4,10 @@ import { METHOD_METADATA } from '../const.ts';
 import type { ActionMetadata } from '../types.ts';
 import { getMetadata } from '../utils/metadata.util.ts';
 import { body, param, query } from './route-params.decorator.ts';
+import { Controller } from './controller.decorator.ts';
 import { All, Delete, Get, Patch, Post, Put } from './http-methods.decorator.ts';
 
+@Controller()
 class HttpMethodController {
   @Get('list')
   list() {}
@@ -40,41 +42,13 @@ Deno.test('HTTP method decorators register method metadata for each decorated ha
   ]);
 });
 
-class ManualMethodController {
-  first() {}
-  second() {}
-}
-
-Deno.test('HTTP method decorators append metadata entries instead of overwriting previous ones', () => {
-  const firstDescriptor = Object.getOwnPropertyDescriptor(ManualMethodController.prototype, 'first');
-  const secondDescriptor = Object.getOwnPropertyDescriptor(ManualMethodController.prototype, 'second');
-
-  assertExists(firstDescriptor);
-  assertExists(secondDescriptor);
-
-  Get('first')(ManualMethodController.prototype, 'first', firstDescriptor);
-  Post('second')(ManualMethodController.prototype, 'second', secondDescriptor);
-
-  const metadata = getMetadata<ActionMetadata[]>(METHOD_METADATA, ManualMethodController.prototype);
-
-  assertExists(metadata);
-  assertEquals(metadata, [
-    { path: 'first', method: 'get', functionName: 'first' },
-    { path: 'second', method: 'post', functionName: 'second' },
-  ]);
-});
-
+@Controller()
 class ResolverMethodController {
+  @Post(':id', [param<string>('id'), body<{ name: string }>(), query<string | null>('dryRun')])
   create(_id: string, _body: { name: string }, _dryRun: string | null) {}
 }
 
 Deno.test('HTTP method decorators store optional args resolvers', () => {
-  const descriptor = Object.getOwnPropertyDescriptor(ResolverMethodController.prototype, 'create');
-
-  assertExists(descriptor);
-
-  Post(':id', [param<string>('id'), body<{ name: string }>(), query<string | null>('dryRun')])(ResolverMethodController.prototype, 'create', descriptor);
-
   const metadata = getMetadata<ActionMetadata[]>(METHOD_METADATA, ResolverMethodController.prototype);
 
   assertExists(metadata);

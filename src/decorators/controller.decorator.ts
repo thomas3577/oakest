@@ -7,22 +7,39 @@ import * as log from '@std/log';
 import { RouteParamTypes } from '../enums.ts';
 import { METHOD_METADATA, MIDDLEWARE_METADATA } from '../const.ts';
 import type { ActionMetadata, ControllerClass, HTTPMethods, RouteArgResolver } from '../types.ts';
-import { getMetadata } from '../utils/metadata.util.ts';
+import { defineMetadata, getMetadata } from '../utils/metadata.util.ts';
 
 type Next = () => Promise<unknown>;
 type ControllerConstructor = new (...instance: never[]) => object;
 type RouterMethodInvoker = Router & Record<HTTPMethods, (path: string, ...handlers: unknown[]) => Router>;
 type ControllerMethodMap = Record<string, (...args: unknown[]) => unknown>;
+type MiddlewareHandler = (ctx: RouterContext<string>, next: Next) => void | Promise<void>;
+type DecoratorMetadataBag = Record<PropertyKey, unknown>;
+type MiddlewareRegistration = { functionName: string; handler: MiddlewareHandler };
 
 /**
  * Controller decorator
  *
  * @param {string} options - Path for the controller
  */
-export function Controller<T extends ControllerConstructor>(options?: string): (fn: T) => T {
+export function Controller<T extends ControllerConstructor>(options?: string): (fn: T, context: ClassDecoratorContext<T>) => T {
   const path: string | undefined = options;
 
-  const result = (fn: T) => {
+  const result = (fn: T, context: ClassDecoratorContext<T>) => {
+    const metadata = context.metadata as DecoratorMetadataBag;
+    const actions = [...((metadata[METHOD_METADATA] as ActionMetadata[] | undefined) ?? [])];
+    const middlewareRegistrations = (metadata[MIDDLEWARE_METADATA] as MiddlewareRegistration[] | undefined) ?? [];
+
+    if (actions.length > 0) {
+      defineMetadata(METHOD_METADATA, actions, fn.prototype);
+    }
+
+    for (const registration of middlewareRegistrations) {
+      const handlers = getMetadata<MiddlewareHandler[]>(MIDDLEWARE_METADATA, fn.prototype, registration.functionName) ?? [];
+      handlers.push(registration.handler);
+      defineMetadata(MIDDLEWARE_METADATA, handlers, fn.prototype, registration.functionName);
+    }
+
     const BaseController = fn as ControllerConstructor;
 
     return class extends BaseController implements ControllerClass {
@@ -38,7 +55,8 @@ export function Controller<T extends ControllerConstructor>(options?: string): (
         const list: ActionMetadata[] = getMetadata(METHOD_METADATA, fn.prototype) || [];
 
         list.forEach((meta: ActionMetadata) => {
-          const middlewaresMetadata = getMetadata(MIDDLEWARE_METADATA, fn.prototype, meta.functionName);
+          const method = (fn.prototype as ControllerMethodMap)[meta.functionName];
+          const middlewaresMetadata = getMetadata(MIDDLEWARE_METADATA, fn.prototype, meta.functionName) ?? getMetadata(MIDDLEWARE_METADATA, method);
           const middlewares = Array.isArray(middlewaresMetadata) ? middlewaresMetadata : middlewaresMetadata ? [middlewaresMetadata] : [];
 
           (route as RouterMethodInvoker)[meta.method](`/${meta.path}`, ...middlewares, async (context: RouterContext<string>, next: Next) => {

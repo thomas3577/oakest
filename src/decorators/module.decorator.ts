@@ -9,8 +9,8 @@ import { defineMetadata } from '../utils/metadata.util.ts';
  *
  * @param {CreateRouterOption} data - Module data
  */
-export function Module<T>(data: CreateRouterOption): (target: ClassConstructor<T>) => void {
-  return (target: ClassConstructor<T>) => {
+export function Module<T>(data: CreateRouterOption): (target: ClassConstructor<T>, context: ClassDecoratorContext<ClassConstructor<T>>) => void {
+  return (target: ClassConstructor<T>, _context: ClassDecoratorContext<ClassConstructor<T>>) => {
     defineMetadata(MODULE_METADATA, data, target.prototype);
   };
 }

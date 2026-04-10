@@ -4,10 +4,12 @@ import type { Context, Middleware, Next } from '@oak/oak';
 import { MIDDLEWARE_METADATA, MODULE_METADATA } from '../const.ts';
 import type { ClassConstructor, ControllerClass, CreateRouterOption } from '../types.ts';
 import { createInjector } from './injector.util.ts';
-import { defineMetadata, getMetadata } from './metadata.util.ts';
+import { getMetadata } from './metadata.util.ts';
 
 type Injector = ReturnType<typeof createInjector>;
-type DecoratorMetadataTarget = object;
+type MiddlewareHandler = (ctx: Context, next: Next) => void | Promise<void>;
+type DecoratorMetadataBag = Record<PropertyKey, unknown>;
+type MiddlewareRegistration = { functionName: string; handler: MiddlewareHandler };
 
 export const isUndefined = (obj: unknown): obj is undefined => typeof obj === 'undefined';
 export const isString = (fn: unknown): fn is string => typeof fn === 'string';
@@ -102,13 +104,24 @@ export const assignModule = (module: ClassConstructor): Middleware<Record<string
  * method. The handler will be called at runtime when the
  * endpoint method is invoked with the Context and Next parameters.
  *
- * @param {DecoratorMetadataTarget} target - decorator metadata target
- * @param {string} methodName - decorator's method name
- * @param {(ctx: Context, next: Next) => void} handler - decorator's handler
+ * @param {ClassMethodDecoratorContext} context - standard method decorator context
+ * @param {MiddlewareHandler} handler - decorator handler
  */
-export const registerMiddlewareMethodDecorator = (target: DecoratorMetadataTarget, methodName: string, handler: (ctx: Context, next: Next) => void): void => {
-  const middleware = getMetadata<Array<(ctx: Context, next: Next) => void>>(MIDDLEWARE_METADATA, target, methodName) || [];
-  middleware.push(handler);
+export function registerMiddlewareMethodDecorator<This extends object, Args extends unknown[], Return>(
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+  handler: MiddlewareHandler,
+): void {
+  if (context.kind !== 'method' || context.static || context.private || typeof context.name !== 'string') {
+    throw new Error('registerMiddlewareMethodDecorator() only supports public instance methods.');
+  }
 
-  defineMetadata(MIDDLEWARE_METADATA, middleware, target, methodName);
-};
+  const metadata = context.metadata as DecoratorMetadataBag;
+  const registrations = (metadata[MIDDLEWARE_METADATA] as MiddlewareRegistration[] | undefined) ?? [];
+
+  registrations.push({
+    functionName: context.name,
+    handler,
+  });
+
+  metadata[MIDDLEWARE_METADATA] = registrations;
+}

@@ -88,6 +88,8 @@ The current release includes breaking changes in DI and route argument handling.
 - `@Injectable({ isSingleton: false })` is no longer supported in the Needle-based DI flow.
 - Parameter decorators like `@Body()`, `@Param()`, `@Query()`, `@Headers()`, `@Req()`, and `@Ctx()` have been removed.
 - Route handler inputs must now be declared on `@Get/@Post/...` via resolver arrays like `@Post(':id', [param('id'), body()])`.
+- Oakest now uses standard decorators; `experimentalDecorators` is no longer required in `deno.json`.
+- Custom method decorators that integrate with Oakest middleware must use the standard decorator context form.
 
 If your code relied on implicit constructor injection, update constructors before upgrading.
 
@@ -194,6 +196,7 @@ If you are upgrading an existing app, use this order:
 3. Remove any use of `@Controller({ injectables: [...] })` and move that selection logic into explicit constructor injection.
 4. Replace parameter decorators with route argument resolvers on `@Get/@Post/...`.
 5. Remove any code or configuration that depended on `reflect-metadata` or emitted constructor metadata.
+6. If you have custom Oakest middleware decorators, migrate them from `(target, methodName)` to `(_value, context)` and call `registerMiddlewareMethodDecorator(context, handler)`.
 
 Typical failure modes after upgrading:
 
@@ -378,6 +381,7 @@ Notes:
 - `@Injectable({ implementing: TOKEN })` can still be used to bind string or symbol tokens and resolve them with `inject<T>(TOKEN)`.
 - `isSingleton: false` is no longer supported in this Needle-based mode.
 - `@Controller({ injectables: [...] })` is no longer part of the public API.
+- `experimentalDecorators` is no longer needed in `deno.json`.
 
 ### Custom Middleware Decorators
 
@@ -396,7 +400,7 @@ function checkUserRoles(context: Context, roles: string[]) {
 }
 
 export function RequiresRole(roles: string[]) {
-  return function (target, methodName) {
+  return function (_value, context) {
     const requiresRole = async (context, next) => {
       // Logic to check the user session or JWT for the required role
       if (checkUserRoles(context, roles)) {
@@ -408,7 +412,7 @@ export function RequiresRole(roles: string[]) {
         return;
       }
     };
-    registerMiddlewareMethodDecorator(target, methodName, requiresRole);
+    registerMiddlewareMethodDecorator(context, requiresRole);
   };
 }
 ```
@@ -428,6 +432,8 @@ export default class SampleController {
   }
 }
 ```
+
+If you already had custom middleware decorators in your codebase, the required migration is just the decorator signature change from `(target, methodName)` to `(_value, context)`.
 
 ### Custom route argument resolvers
 

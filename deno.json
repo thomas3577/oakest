@@ -1,6 +1,6 @@
 {
   "name": "@dx/oakest",
-  "version": "0.0.30",
+  "version": "0.1.0",
   "exports": {
     ".": "./mod.ts"
   },
@@ -25,9 +25,6 @@
       "deno.lock",
       "**/*.test.ts"
     ]
-  },
-  "compilerOptions": {
-    "experimentalDecorators": true
   },
   "fmt": {
     "useTabs": false,
