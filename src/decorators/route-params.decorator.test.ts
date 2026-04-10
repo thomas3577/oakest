@@ -1,65 +1,31 @@
 import { assertEquals, assertExists } from '@std/assert';
 
-import { ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
-import type { RouteArgsMetadata } from '../types.ts';
-import { getMetadata } from '../utils/metadata.util.ts';
-import { Body, Ctx, Headers, IP, Next, Param, Query, Req, Res } from './route-params.decorator.ts';
+import { body, ctx, custom, headers, ip, next, param, query, req, res } from './route-params.decorator.ts';
 
-class RouteParamController {
-  handler(
-    _ctx?: unknown,
-    _req?: unknown,
-    _res?: unknown,
-    _next?: unknown,
-    _query?: unknown,
-    _param?: unknown,
-    _body?: unknown,
-    _headers?: unknown,
-    _ip?: unknown,
-  ) {}
-}
-
-class InvalidDataController {
-  handler(_query?: unknown, _body?: unknown) {}
-}
-
-Deno.test('route param decorators store the expected metadata entries', () => {
-  Req()(RouteParamController.prototype, 'handler', 1);
-  Ctx()(RouteParamController.prototype, 'handler', 0);
-  Res()(RouteParamController.prototype, 'handler', 2);
-  Next()(RouteParamController.prototype, 'handler', 3);
-  Query('search')(RouteParamController.prototype, 'handler', 4);
-  Param('id')(RouteParamController.prototype, 'handler', 5);
-  Body('name')(RouteParamController.prototype, 'handler', 6);
-  Headers('x-token')(RouteParamController.prototype, 'handler', 7);
-  IP()(RouteParamController.prototype, 'handler', 8);
-
-  const metadata = getMetadata<RouteArgsMetadata[]>(ROUTE_ARGS_METADATA, RouteParamController.prototype, 'handler');
-
-  assertExists(metadata);
-  assertEquals(metadata, [
-    { paramType: RouteParamTypes.REQUEST, index: 1, data: undefined },
-    { paramType: RouteParamTypes.CONTEXT, index: 0, data: undefined },
-    { paramType: RouteParamTypes.RESPONSE, index: 2, data: undefined },
-    { paramType: RouteParamTypes.NEXT, index: 3, data: undefined },
-    { paramType: RouteParamTypes.QUERY, index: 4, data: 'search' },
-    { paramType: RouteParamTypes.PARAM, index: 5, data: 'id' },
-    { paramType: RouteParamTypes.BODY, index: 6, data: 'name' },
-    { paramType: RouteParamTypes.HEADERS, index: 7, data: 'x-token' },
-    { paramType: RouteParamTypes.IP, index: 8, data: undefined },
-  ]);
+Deno.test('route arg resolvers create the expected metadata shape', () => {
+  assertEquals(req(), { paramType: RouteParamTypes.REQUEST, data: undefined });
+  assertEquals(ctx(), { paramType: RouteParamTypes.CONTEXT, data: undefined });
+  assertEquals(res(), { paramType: RouteParamTypes.RESPONSE, data: undefined });
+  assertEquals(next(), { paramType: RouteParamTypes.NEXT, data: undefined });
+  assertEquals(query('search'), { paramType: RouteParamTypes.QUERY, data: 'search' });
+  assertEquals(param('id'), { paramType: RouteParamTypes.PARAM, data: 'id' });
+  assertEquals(body('name'), { paramType: RouteParamTypes.BODY, data: 'name' });
+  assertEquals(headers('x-token'), { paramType: RouteParamTypes.HEADERS, data: 'x-token' });
+  assertEquals(ip(), { paramType: RouteParamTypes.IP, data: undefined });
 });
 
-Deno.test('route param decorators ignore non-string custom data payloads', () => {
-  Query({ invalid: true } as unknown as string)(InvalidDataController.prototype, 'handler', 0);
-  Body(123 as unknown as string)(InvalidDataController.prototype, 'handler', 1);
+Deno.test('route arg resolvers ignore non-string custom data payloads', () => {
+  assertEquals(query({ invalid: true } as unknown as string), { paramType: RouteParamTypes.QUERY, data: undefined });
+  assertEquals(body(123 as unknown as string), { paramType: RouteParamTypes.BODY, data: undefined });
+});
 
-  const metadata = getMetadata<RouteArgsMetadata[]>(ROUTE_ARGS_METADATA, InvalidDataController.prototype, 'handler');
+Deno.test('custom() creates a custom resolver', () => {
+  const handler = () => 'ok';
+  const resolver = custom<string>(handler, 'payload');
 
-  assertExists(metadata);
-  assertEquals(metadata, [
-    { paramType: RouteParamTypes.QUERY, index: 0, data: undefined },
-    { paramType: RouteParamTypes.BODY, index: 1, data: undefined },
-  ]);
+  assertExists(resolver.handler);
+  assertEquals(resolver.paramType, RouteParamTypes.CUSTOM);
+  assertEquals(resolver.data, 'payload');
+  assertEquals(resolver.handler, handler);
 });

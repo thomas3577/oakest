@@ -1,4 +1,5 @@
-import { Body, Controller, Get, inject, IP, Param, Post, Query } from '../../mod.ts';
+import { body, Controller, Get, inject, param, Post, query } from '../../mod.ts';
+import type { RouterContext } from '@oak/oak';
 
 import { SharedService } from '../shared/shared.service.ts';
 import { SampleService } from './sample.service.ts';
@@ -15,14 +16,14 @@ export class SampleController {
     return this._sampleService.get();
   }
 
-  @Post()
-  post(@Body() body: Record<string, unknown>) {
+  @Post([body<Record<string, unknown>>()])
+  post(body: Record<string, unknown>) {
     return body;
   }
 
-  @Get('test/:id')
-  test(@Param('id') id: string, @Query() test: URLSearchParams, @IP() ip: string) {
-    return { id, ...Object.fromEntries(test), ip };
+  @Get('test/:id', [param<string>('id'), query<URLSearchParams>()])
+  test(id: string, test: URLSearchParams, ctx: RouterContext<string>) {
+    return { id, ...Object.fromEntries(test), ip: ctx.request.ip };
   }
 
   @Get('shared')

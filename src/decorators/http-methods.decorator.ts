@@ -1,7 +1,7 @@
 import '../utils/reflect-shim.ts';
 
 import { METHOD_METADATA } from '../const.ts';
-import type { ActionMetadata, HTTPMethods } from '../types.ts';
+import type { ActionMetadata, HTTPMethods, RouteArgResolver } from '../types.ts';
 import { defineMetadata, getMetadata } from '../utils/metadata.util.ts';
 
 /**
@@ -49,15 +49,24 @@ export const All: HttpMethod = mappingMethod('all');
 /**
  * HTTP Method
  */
-export type HttpMethod = (path?: string) => (target: object, functionName: string, _: PropertyDescriptor) => void;
+export type HttpMethod = {
+  (path?: string, args?: RouteArgResolver[]): (target: object, functionName: string, _: PropertyDescriptor) => void;
+  (args: RouteArgResolver[]): (target: object, functionName: string, _: PropertyDescriptor) => void;
+};
 
 function mappingMethod(method: HTTPMethods): HttpMethod {
-  return (path = '') => (target: object, functionName: string, _: PropertyDescriptor) => {
+  return (pathOrArgs: string | RouteArgResolver[] = '', args?: RouteArgResolver[]) => (target: object, functionName: string, _: PropertyDescriptor) => {
+    const path = Array.isArray(pathOrArgs) ? '' : pathOrArgs;
+    const routeArgs = Array.isArray(pathOrArgs) ? pathOrArgs : args;
     const meta: ActionMetadata = {
       path,
       method,
       functionName,
     };
+
+    if (routeArgs) {
+      meta.args = routeArgs;
+    }
 
     addMetadata(meta, target, METHOD_METADATA);
   };

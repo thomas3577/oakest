@@ -8,6 +8,7 @@ export interface ActionMetadata {
   path: string;
   method: HTTPMethods;
   functionName: string;
+  args?: RouteArgResolver[];
 }
 
 export interface CreateRouterOption {
@@ -28,11 +29,14 @@ export type ControllerClass = {
   init(routePrefix?: string): void;
 };
 
-export interface RouteArgsMetadata {
+export interface RouteArgResolver {
   paramType: RouteParamTypes;
-  index: number;
   data?: ParamData;
   handler?: (ctx: RouterContext<string>, data?: ParamData) => unknown;
+}
+
+export interface TypedRouteArgResolver<T = unknown> extends RouteArgResolver {
+  readonly __type?: T;
 }
 
 // deno-lint-ignore no-explicit-any -- Constructor parameter types must stay permissive for assignability across decorated classes.

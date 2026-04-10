@@ -3,9 +3,9 @@ import { Application, Router } from '@oak/oak';
 import type { RouterContext } from '@oak/oak';
 
 import { Get, Post } from './http-methods.decorator.ts';
-import { Body, Ctx, Headers, IP, Next, Param, Query, Req, Res } from './route-params.decorator.ts';
+import { body, ctx, custom, headers, ip, next, param, query, req, res } from './route-params.decorator.ts';
 import { Controller } from './controller.decorator.ts';
-import { registerCustomRouteParamDecorator, registerMiddlewareMethodDecorator } from '../utils/router.util.ts';
+import { registerMiddlewareMethodDecorator } from '../utils/router.util.ts';
 import type { ControllerClass } from '../types.ts';
 
 const mountController = (controller: { path?: string; route?: Router; init(routePrefix?: string): void }, routePrefix?: string) => {
@@ -25,28 +25,28 @@ const mountController = (controller: { path?: string; route?: Router; init(route
 
 @Controller('users')
 class ParameterController {
-  @Post(':id')
+  @Post(':id', [ctx<RouterContext<string>>(), req<RouterContext<string>['request']>(), res<RouterContext<string>['response']>(), next<() => Promise<unknown>>(), query<URLSearchParams>(), param<Record<string, string>>(), body<Record<string, string>>(), headers<Record<string, string>>(), ip<string>()])
   create(
-    @Ctx() ctx: RouterContext<string>,
-    @Req() req: RouterContext<string>['request'],
-    @Res() res: RouterContext<string>['response'],
-    @Next() next: () => Promise<unknown>,
-    @Query() query: URLSearchParams,
-    @Param() params: Record<string, string>,
-    @Body() body: Record<string, string>,
-    @Headers() headers: Record<string, string>,
-    @IP() ip: string,
+    requestContext: RouterContext<string>,
+    request: RouterContext<string>['request'],
+    response: RouterContext<string>['response'],
+    nextFn: () => Promise<unknown>,
+    searchParams: URLSearchParams,
+    params: Record<string, string>,
+    requestBody: Record<string, string>,
+    requestHeaders: Record<string, string>,
+    ipAddress: string,
   ) {
     return {
-      path: ctx.request.url.pathname,
-      reqMatches: req === ctx.request,
-      resWritable: res.writable,
-      nextType: typeof next,
-      query: query.get('q'),
+      path: requestContext.request.url.pathname,
+      reqMatches: request === requestContext.request,
+      resWritable: response.writable,
+      nextType: typeof nextFn,
+      query: searchParams.get('q'),
       param: params.id,
-      body: body.name,
-      header: headers['x-test'],
-      ip,
+      body: requestBody.name,
+      header: requestHeaders['x-test'],
+      ip: ipAddress,
     };
   }
 }
@@ -55,10 +55,10 @@ const middlewareEvents: string[] = [];
 
 @Controller('tasks')
 class RuntimeController {
-  @Get(':id')
+  @Get(':id', [query<string | null>('filter'), param<string>('id'), custom<string>((routeContext, data) => `${routeContext.params.id}:${String(data)}`, 'extra')])
   index(
-    @Query('filter') filter: string | null,
-    @Param('id') id: string,
+    filter: string | null,
+    id: string,
     customValue: string,
   ) {
     middlewareEvents.push(`handler:${filter}:${id}:${customValue}`);
@@ -80,13 +80,36 @@ registerMiddlewareMethodDecorator(runtimeControllerPrototype, 'index', async (ct
   middlewareEvents.push('middleware:after');
 });
 
-registerCustomRouteParamDecorator(runtimeControllerPrototype, 'index', 2)('extra')((ctx: RouterContext<string>, data: unknown) => `${ctx.params.id}:${String(data)}`);
-
 @Controller('empty')
 class UndefinedResultController {
   @Get('noop')
   noop() {
     return undefined;
+  }
+}
+
+@Controller('mapped')
+class MappedArgsController {
+  @Post(':id', [param<string>('id'), body<{ name: string }>(), query<string | null>('dryRun')])
+  update(
+    id: string,
+    requestBody: { name: string },
+    dryRun: string | null,
+    ctx: RouterContext<string>,
+  ) {
+    return {
+      id,
+      bodyName: requestBody.name,
+      dryRun,
+      path: ctx.request.url.pathname,
+    };
+  }
+
+  @Get()
+  current(ctx: RouterContext<string>) {
+    return {
+      path: ctx.request.url.pathname,
+    };
   }
 }
 
@@ -146,4 +169,54 @@ Deno.test('Controller handlers that return undefined leave the response untouche
   assertExists(response);
   assertEquals(response.status, 404);
   assertEquals(await response.text(), '');
+});
+
+Deno.test('Controller handlers resolve mapped args and append ctx as the final implicit parameter', async () => {
+  const app = mountController(new MappedArgsController() as unknown as ControllerClass);
+  const response = await app.handle(
+    new Request('http://localhost/mapped/123?dryRun=yes', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ name: 'oakest' }),
+    }),
+  );
+
+  assertExists(response);
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    id: '123',
+    bodyName: 'oakest',
+    dryRun: 'yes',
+    path: '/mapped/123',
+  });
+});
+
+Deno.test('Controller handlers without explicit route arg mapping receive ctx as the only parameter', async () => {
+  const app = mountController(new MappedArgsController() as unknown as ControllerClass);
+  const response = await app.handle(new Request('http://localhost/mapped'));
+
+  assertExists(response);
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    path: '/mapped',
+  });
+});
+
+@Controller('invalid')
+class InvalidMappedController {
+  @Get('broken')
+  broken(first: string, second: string) {
+    return { first, second };
+  }
+}
+
+Deno.test('Controller handlers with multiple parameters require explicit route arg mapping', async () => {
+  const app = mountController(new InvalidMappedController() as unknown as ControllerClass);
+  const response = await app.handle(new Request('http://localhost/invalid/broken'));
+
+  assertExists(response);
+  assertEquals(response.status, 500);
+  assertEquals(await response.text(), 'Internal Server Error');
 });

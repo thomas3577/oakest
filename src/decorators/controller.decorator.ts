@@ -5,8 +5,8 @@ import type { RouterContext } from '@oak/oak';
 import * as log from '@std/log';
 
 import { RouteParamTypes } from '../enums.ts';
-import { METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
-import type { ActionMetadata, ControllerClass, HTTPMethods, RouteArgsMetadata } from '../types.ts';
+import { METHOD_METADATA, MIDDLEWARE_METADATA } from '../const.ts';
+import type { ActionMetadata, ControllerClass, HTTPMethods, RouteArgResolver } from '../types.ts';
 import { getMetadata } from '../utils/metadata.util.ts';
 
 type Next = () => Promise<unknown>;
@@ -38,18 +38,14 @@ export function Controller<T extends ControllerConstructor>(options?: string): (
         const list: ActionMetadata[] = getMetadata(METHOD_METADATA, fn.prototype) || [];
 
         list.forEach((meta: ActionMetadata) => {
-          const argsMetadataList: RouteArgsMetadata[] = getMetadata(ROUTE_ARGS_METADATA, fn.prototype, meta.functionName) || [];
           const middlewaresMetadata = getMetadata(MIDDLEWARE_METADATA, fn.prototype, meta.functionName);
           const middlewares = Array.isArray(middlewaresMetadata) ? middlewaresMetadata : middlewaresMetadata ? [middlewaresMetadata] : [];
 
           (route as RouterMethodInvoker)[meta.method](`/${meta.path}`, ...middlewares, async (context: RouterContext<string>, next: Next) => {
-            const inputs = await Promise.all(
-              argsMetadataList
-                .sort((a, b) => a.index - b.index)
-                .map(async (data) => await getContextData(data, context, next)),
-            );
+            const handler = (this as unknown as ControllerMethodMap)[meta.functionName];
+            const inputs = await resolveHandlerInputs(handler, meta.args, context, next);
 
-            const result = await (this as unknown as ControllerMethodMap)[meta.functionName](...inputs);
+            const result = await handler.apply(this, inputs);
             if (result === undefined) return;
 
             if (context.response.writable) {
@@ -85,7 +81,39 @@ function logMapping(meta: ActionMetadata, path?: string): void {
   log.info(`${methodName} ${fullPath}`);
 }
 
-async function getContextData(args: RouteArgsMetadata, ctx: RouterContext<string>, next: Next): Promise<unknown> {
+async function resolveHandlerInputs(
+  handler: (...args: unknown[]) => unknown,
+  routeArgs: RouteArgResolver[] | undefined,
+  context: RouterContext<string>,
+  next: Next,
+): Promise<unknown[]> {
+  if (routeArgs && routeArgs.length > 0) {
+    const inputs = await Promise.all(routeArgs.map(async (data) => await getContextData(data, context, next)));
+    const parameterCount = handler.length;
+
+    if (parameterCount === inputs.length) {
+      return inputs;
+    }
+
+    if (parameterCount === inputs.length + 1) {
+      return [...inputs, context];
+    }
+
+    throw new Error(`Handler ${handler.name || '<anonymous>'} expects ${parameterCount} parameters, but route mapping resolved ${inputs.length} argument(s). Only an optional trailing ctx parameter is supported.`);
+  }
+
+  if (handler.length === 1) {
+    return [context];
+  }
+
+  if (handler.length > 1) {
+    throw new Error(`Handler ${handler.name || '<anonymous>'} expects ${handler.length} parameters, but no route argument mapping was provided. Use @Get/@Post/... with resolver arguments or accept only ctx as a single parameter.`);
+  }
+
+  return [];
+}
+
+async function getContextData(args: RouteArgResolver, ctx: RouterContext<string>, next: Next): Promise<unknown> {
   const { paramType, data } = args;
   const req = ctx.request;
   const res = ctx.response;

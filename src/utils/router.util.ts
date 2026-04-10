@@ -1,9 +1,8 @@
 import { Router } from '@oak/oak';
-import type { Context, Middleware, Next, RouterContext } from '@oak/oak';
+import type { Context, Middleware, Next } from '@oak/oak';
 
-import { MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
-import { RouteParamTypes } from '../enums.ts';
-import type { ClassConstructor, ControllerClass, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
+import { MIDDLEWARE_METADATA, MODULE_METADATA } from '../const.ts';
+import type { ClassConstructor, ControllerClass, CreateRouterOption } from '../types.ts';
 import { createInjector } from './injector.util.ts';
 import { defineMetadata, getMetadata } from './metadata.util.ts';
 
@@ -112,30 +111,4 @@ export const registerMiddlewareMethodDecorator = (target: DecoratorMetadataTarge
   middleware.push(handler);
 
   defineMetadata(MIDDLEWARE_METADATA, middleware, target, methodName);
-};
-
-/**
- * Registers a custom route parameter decorator.
- *
- * @param {DecoratorMetadataTarget} target - the target object
- * @param {string} methodName - the name of the method
- * @param {number} paramIndex - the index of the parameter
- *
- * @returns {(data?: ParamData) => (handler: (ctx: RouterContext<string>, data?: ParamData) => unknown) => void} a function that takes optional data and returns a function that requires the param's handler as only parameter
- */
-export const registerCustomRouteParamDecorator = (target: DecoratorMetadataTarget, methodName: string, paramIndex: number): (data?: ParamData) => (handler: (ctx: RouterContext<string>, data?: ParamData) => unknown) => void => {
-  return (data?: ParamData) => (handler: (ctx: RouterContext<string>, data?: ParamData) => unknown) => {
-    const args: RouteArgsMetadata[] = getMetadata(ROUTE_ARGS_METADATA, target, methodName) || [];
-    const hasParamData = isNil(data) || isString(data);
-    const paramData = hasParamData ? data : undefined;
-
-    args.push({
-      paramType: RouteParamTypes.CUSTOM,
-      index: paramIndex,
-      data: paramData,
-      handler,
-    });
-
-    defineMetadata(ROUTE_ARGS_METADATA, args, target, methodName);
-  };
 };
