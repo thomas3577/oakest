@@ -1,6 +1,8 @@
 import { assertNotStrictEquals, assertStrictEquals } from '@std/assert';
 
 import { Injectable } from '../decorators/injectable.ts';
+import type { ClassConstructor } from '../types.ts';
+import { clearDependencies, registerDependencies } from './dependency-registry.util.ts';
 import { inject } from './injector.util.ts';
 
 @Injectable()
@@ -44,6 +46,32 @@ class TransientRoot {
     readonly consumerB: _TransientConsumerB,
   ) {}
 }
+
+const registerTestDependencies = () => {
+  registerDependencies(_SingletonConsumerA as ClassConstructor, [_SingletonService]);
+  registerDependencies(_SingletonConsumerB as ClassConstructor, [_SingletonService]);
+  registerDependencies(_SingletonRoot as ClassConstructor, [_SingletonConsumerA, _SingletonConsumerB]);
+  registerDependencies(_TransientConsumerA as ClassConstructor, [_TransientService]);
+  registerDependencies(_TransientConsumerB as ClassConstructor, [_TransientService]);
+  registerDependencies(TransientRoot as ClassConstructor, [_TransientConsumerA, _TransientConsumerB]);
+};
+
+const clearTestDependencies = () => {
+  clearDependencies(_SingletonConsumerA as ClassConstructor);
+  clearDependencies(_SingletonConsumerB as ClassConstructor);
+  clearDependencies(_SingletonRoot as ClassConstructor);
+  clearDependencies(_TransientConsumerA as ClassConstructor);
+  clearDependencies(_TransientConsumerB as ClassConstructor);
+  clearDependencies(TransientRoot as ClassConstructor);
+};
+
+Deno.test.beforeEach(() => {
+  registerTestDependencies();
+});
+
+Deno.test.afterEach(() => {
+  clearTestDependencies();
+});
 
 Deno.test('inject() reuses singleton services within the same object graph', () => {
   const root = inject(_SingletonRoot);

@@ -62,6 +62,7 @@ Register an app module with oak.
 // ./main.ts
 import { Application } from '@oak/oak';
 import { assignModule } from '@dx/oakest';
+import './oakest.di.generated.ts';
 import { AppModule } from './app.module.ts';
 
 const app = new Application();
@@ -69,6 +70,14 @@ app.use(assignModule(AppModule));
 
 await app.listen({ port: 8000 });
 ```
+
+Generate the DI registry before starting the app.
+
+```bash
+deno run -A jsr:@dx/oakest/tools/generate-di-registry --root . --out ./oakest.di.generated.ts --import-source @dx/oakest
+```
+
+The generated file registers constructor dependencies for controllers and providers. Import it once at startup before calling `assignModule()`.
 
 Run your app and following endpoints will be available:
 
@@ -164,6 +173,8 @@ Below is a list of the provided decorators.
 Providers are responsible for main business logic as services, repositories, factories, helpers, and so on.
 The main idea of a provider is that it can be injected as a dependency. Depending on the environment, different implementations of a service can be provided.
 
+Constructor dependency injection is registry-based. That means classes with constructor parameters must be included in the generated DI registry file that your app imports at startup.
+
 ```typescript
 // ./sample.service.ts
 import { Injectable } from '@dx/oakest';
@@ -221,6 +232,35 @@ import { MockUserService, UserService } from './sample.service.ts';
 })
 export class SampleModule {}
 ```
+
+### Dependency Registry
+
+Oakest no longer relies on `reflect-metadata` or emitted decorator type metadata for constructor injection. Instead, you generate a registry file for your app and import it once during bootstrap.
+
+Example workflow:
+
+```bash
+deno run -A jsr:@dx/oakest/tools/generate-di-registry --root ./src --out ./src/oakest.di.generated.ts --import-source @dx/oakest
+```
+
+```typescript
+// ./src/main.ts
+import './oakest.di.generated.ts';
+import { Application } from '@oak/oak';
+import { assignModule } from '@dx/oakest';
+import { AppModule } from './app.module.ts';
+
+const app = new Application();
+app.use(assignModule(AppModule));
+
+await app.listen({ port: 8000 });
+```
+
+Notes:
+
+- The generator scans exported classes with typed constructor parameters.
+- The generated file must be regenerated when constructor dependencies change.
+- If a class with constructor parameters is missing from the registry, Oakest now throws a startup-time error instead of falling back to emitted metadata.
 
 ### Custom Middleware Decorators
 

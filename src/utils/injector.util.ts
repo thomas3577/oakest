@@ -2,6 +2,7 @@ import { Container } from '@needle-di/core';
 
 import { INJECTABLE_OPTIONS_METADATA, INJECTOR_INTERFACES_METADATA } from '../const.ts';
 import type { ClassConstructor } from '../types.ts';
+import { getDependencies as getRegisteredDependencies } from './dependency-registry.util.ts';
 import { getMetadata } from './metadata.util.ts';
 
 type InjectableToken = string | symbol | null;
@@ -44,7 +45,12 @@ class NeedleInjector {
   }
 
   #getDependencies(target: ClassConstructor, injectables: InjectableToken[] = []): unknown[] {
-    const paramTypes: ClassConstructor[] = getMetadata('design:paramtypes', target) || [];
+    const registeredDependencies = getRegisteredDependencies(target);
+    const paramTypes: ClassConstructor[] = registeredDependencies || [];
+
+    if (!registeredDependencies && target.length > 0) {
+      throw new Error(`No registered constructor dependencies found for ${target.name}. Run the DI registry generator or register dependencies manually.`);
+    }
 
     return paramTypes.map((requiredProvider, index) => {
       if (!isClassConstructor(requiredProvider)) {
