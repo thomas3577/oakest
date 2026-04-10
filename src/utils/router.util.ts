@@ -11,21 +11,23 @@ export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undef
 export const isString = (fn: any): fn is string => typeof fn === 'string';
 export const isNil = (obj: any): obj is null | undefined => isUndefined(obj) || obj === null;
 
-const controllerNames: string[] = [];
+const mergeRoutePrefix = (prefix?: string, routePrefix?: string): string | undefined => {
+  return prefix ? prefix + (routePrefix ? `/${routePrefix}` : '') : routePrefix;
+};
 
-const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstructor[], prefix?: string, router = new Router()): Router<Record<string, any>> => {
+const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstructor[], controllerNames: Set<string>, prefix?: string, router = new Router()): Router<Record<string, any>> => {
   const { controllers, routePrefix } = moduleOptions;
   const injector = createInjector(providers);
 
   controllers?.forEach((Controller: ClassConstructor<unknown>) => {
-    const ControllerTarget = Object.getPrototypeOf(Controller);
-    if (controllerNames.includes(ControllerTarget.name)) {
+    const controllerName = Object.getPrototypeOf(Controller).name;
+    if (controllerNames.has(controllerName)) {
       return;
     }
 
-    controllerNames.push(ControllerTarget.name);
+    controllerNames.add(controllerName);
 
-    const prefixFull: string | undefined = prefix ? prefix + (routePrefix ? `/${routePrefix}` : '') : routePrefix;
+    const prefixFull = mergeRoutePrefix(prefix, routePrefix);
     const controller: ControllerClass = injector.resolve(Controller as unknown as new (...args: any[]) => ControllerClass);
     controller.init(prefixFull);
 
@@ -41,12 +43,13 @@ const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstru
   return router;
 };
 
-const getRouter = (module: ClassConstructor, prefix?: string, router?: Router): Router<Record<string, any>> => {
+const getRouter = (module: ClassConstructor, controllerNames: Set<string>, prefix?: string, router?: Router): Router<Record<string, any>> => {
   const moduleOption: CreateRouterOption = getMetadata(MODULE_METADATA, module.prototype) as CreateRouterOption;
   const providers: ClassConstructor[] = getProviders(module);
-  const newRouter: Router<Record<string, any>> = createRouter(moduleOption, providers, prefix, router);
+  const newRouter: Router<Record<string, any>> = createRouter(moduleOption, providers, controllerNames, prefix, router);
+  const prefixFull = mergeRoutePrefix(prefix, moduleOption.routePrefix);
 
-  moduleOption.modules?.forEach((module) => getRouter(module, moduleOption.routePrefix, newRouter)) || [];
+  moduleOption.modules?.forEach((module) => getRouter(module, controllerNames, prefixFull, newRouter)) || [];
 
   return newRouter;
 };
@@ -71,7 +74,7 @@ const getProviders = (module: ClassConstructor, providers: ClassConstructor[] = 
  * @returns {Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>>} the middleware
  */
 export const assignModule = (module: ClassConstructor): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> => {
-  const router: Router<Record<string, any>> = getRouter(module);
+  const router: Router<Record<string, any>> = getRouter(module, new Set<string>());
   const routes = router.routes();
 
   return routes;
