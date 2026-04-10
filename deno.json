@@ -2,20 +2,16 @@
   "name": "@dx/oakest",
   "version": "0.0.30",
   "exports": {
-    ".": "./mod.ts",
-    "./tools/generate-di-registry": "./tools/generate-di-registry.ts"
+    ".": "./mod.ts"
   },
   "tasks": {
-    "demo": "deno task generate:di:demo && deno run -A ./demo/main.ts",
-    "generate:di": "deno run -A ./tools/generate-di-registry.ts --root . --out ./oakest.di.generated.ts --import-source @dx/oakest",
-    "generate:di:demo": "deno run -A ./tools/generate-di-registry.ts --root ./demo --out ./demo/oakest.di.generated.ts --import-source ../mod.ts",
+    "demo": "deno run -A ./demo/main.ts",
     "lock": "deno cache **/*.*.ts",
     "update": "deno outdated --update --latest"
   },
   "imports": {
     "@needle-di/core": "jsr:@needle-di/core@1.1.2",
     "@oak/oak": "jsr:@oak/oak@17.2.0",
-    "@std/path": "jsr:@std/path@1.1.4",
     "@std/log": "jsr:@std/log@0.224.14",
     "@std/assert": "jsr:@std/assert@1.0.19"
   },

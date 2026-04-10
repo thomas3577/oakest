@@ -62,7 +62,6 @@ Register an app module with oak.
 // ./main.ts
 import { Application } from '@oak/oak';
 import { assignModule } from '@dx/oakest';
-import './oakest.di.generated.ts';
 import { AppModule } from './app.module.ts';
 
 const app = new Application();
@@ -70,14 +69,6 @@ app.use(assignModule(AppModule));
 
 await app.listen({ port: 8000 });
 ```
-
-Generate the DI registry before starting the app.
-
-```bash
-deno run -A jsr:@dx/oakest/tools/generate-di-registry --root . --out ./oakest.di.generated.ts --import-source @dx/oakest
-```
-
-The generated file registers constructor dependencies for controllers and providers. Import it once at startup before calling `assignModule()`.
 
 Run your app and following endpoints will be available:
 
@@ -206,12 +197,12 @@ export class MockUserService {
 }
 
 // ./sample.controller.ts
-import { Controller, Get } from '@dx/oakest';
+import { Controller, Get, inject } from '@dx/oakest';
 import { UserService } from './sample.service.ts';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService = inject(UserService)) {}
 
   @Get()
   getAllUsers() {
@@ -233,34 +224,32 @@ import { MockUserService, UserService } from './sample.service.ts';
 export class SampleModule {}
 ```
 
-### Dependency Registry
+### Explicit Injection
 
-Oakest no longer relies on `reflect-metadata` or emitted decorator type metadata for constructor injection. Instead, you generate a registry file for your app and import it once during bootstrap.
-
-Example workflow:
-
-```bash
-deno run -A jsr:@dx/oakest/tools/generate-di-registry --root ./src --out ./src/oakest.di.generated.ts --import-source @dx/oakest
-```
+Oakest no longer relies on `reflect-metadata` or emitted constructor type metadata for dependency injection. Constructor dependencies are declared explicitly with Needle's `inject()` helper.
 
 ```typescript
-// ./src/main.ts
-import './oakest.di.generated.ts';
-import { Application } from '@oak/oak';
-import { assignModule } from '@dx/oakest';
-import { AppModule } from './app.module.ts';
+import { Controller, Get, inject } from '@dx/oakest';
 
-const app = new Application();
-app.use(assignModule(AppModule));
+import { UsersService } from './users.service.ts';
 
-await app.listen({ port: 8000 });
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService = inject(UsersService)) {}
+
+  @Get()
+  getAllUsers() {
+    return this.usersService.getAllUsers();
+  }
+}
 ```
 
 Notes:
 
-- The generator scans exported classes with typed constructor parameters.
-- The generated file must be regenerated when constructor dependencies change.
-- If a class with constructor parameters is missing from the registry, Oakest now throws a startup-time error instead of falling back to emitted metadata.
+- Dependencies must be requested explicitly in constructor default values.
+- Providers still need to be registered in your module's `providers` array.
+- `@Injectable({ implementing: TOKEN })` can still be used to bind string or symbol tokens and resolve them with `inject<T>(TOKEN)`.
+- `isSingleton: false` is no longer supported in this Needle-based mode.
 
 ### Custom Middleware Decorators
 

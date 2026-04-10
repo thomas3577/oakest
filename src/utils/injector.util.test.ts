@@ -1,86 +1,67 @@
-import { assertNotStrictEquals, assertStrictEquals } from '@std/assert';
+import { assertStrictEquals } from '@std/assert';
 
 import { Injectable } from '../decorators/injectable.ts';
-import type { ClassConstructor } from '../types.ts';
-import { clearDependencies, registerDependencies } from './dependency-registry.util.ts';
-import { inject } from './injector.util.ts';
+import { createInjector, inject } from './injector.util.ts';
 
 @Injectable()
 class _SingletonService {}
 
-@Injectable({ isSingleton: false })
-class _TransientService {}
-
-@Injectable()
 class _SingletonConsumerA {
-  constructor(readonly service: _SingletonService) {}
+  constructor(readonly service = inject(_SingletonService)) {}
 }
 
 @Injectable()
 class _SingletonConsumerB {
-  constructor(readonly service: _SingletonService) {}
+  constructor(readonly service = inject(_SingletonService)) {}
 }
 
 @Injectable()
 class _SingletonRoot {
   constructor(
-    readonly consumerA: _SingletonConsumerA,
-    readonly consumerB: _SingletonConsumerB,
+    readonly consumerA = inject(_SingletonConsumerA),
+    readonly consumerB = inject(_SingletonConsumerB),
   ) {}
 }
 
 @Injectable()
-class _TransientConsumerA {
-  constructor(readonly service: _TransientService) {}
+class _MissingProviderConsumer {
+  constructor(readonly service = inject(_SingletonService)) {}
 }
 
 @Injectable()
-class _TransientConsumerB {
-  constructor(readonly service: _TransientService) {}
-}
+class _ExplicitTokenService {}
+
+const EXPLICIT_TOKEN = Symbol('explicit-token');
+
+@Injectable({ implementing: EXPLICIT_TOKEN })
+class _ExplicitTokenImplementation extends _ExplicitTokenService {}
 
 @Injectable()
-class TransientRoot {
-  constructor(
-    readonly consumerA: _TransientConsumerA,
-    readonly consumerB: _TransientConsumerB,
-  ) {}
+class _ExplicitTokenConsumer {
+  constructor(readonly service = inject<_ExplicitTokenService>(EXPLICIT_TOKEN)) {}
 }
-
-const registerTestDependencies = () => {
-  registerDependencies(_SingletonConsumerA as ClassConstructor, [_SingletonService]);
-  registerDependencies(_SingletonConsumerB as ClassConstructor, [_SingletonService]);
-  registerDependencies(_SingletonRoot as ClassConstructor, [_SingletonConsumerA, _SingletonConsumerB]);
-  registerDependencies(_TransientConsumerA as ClassConstructor, [_TransientService]);
-  registerDependencies(_TransientConsumerB as ClassConstructor, [_TransientService]);
-  registerDependencies(TransientRoot as ClassConstructor, [_TransientConsumerA, _TransientConsumerB]);
-};
-
-const clearTestDependencies = () => {
-  clearDependencies(_SingletonConsumerA as ClassConstructor);
-  clearDependencies(_SingletonConsumerB as ClassConstructor);
-  clearDependencies(_SingletonRoot as ClassConstructor);
-  clearDependencies(_TransientConsumerA as ClassConstructor);
-  clearDependencies(_TransientConsumerB as ClassConstructor);
-  clearDependencies(TransientRoot as ClassConstructor);
-};
-
-Deno.test.beforeEach(() => {
-  registerTestDependencies();
-});
-
-Deno.test.afterEach(() => {
-  clearTestDependencies();
-});
 
 Deno.test('inject() reuses singleton services within the same object graph', () => {
-  const root = inject(_SingletonRoot);
+  const root = createInjector([_SingletonService, _SingletonConsumerA, _SingletonConsumerB]).resolve(_SingletonRoot);
 
   assertStrictEquals(root.consumerA.service, root.consumerB.service);
 });
 
-Deno.test('inject() recreates transient services within the same object graph', () => {
-  const root = inject(TransientRoot);
+Deno.test('createInjector() resolves implementing tokens through explicit Needle inject()', () => {
+  const consumer = createInjector([_ExplicitTokenImplementation]).resolve(_ExplicitTokenConsumer);
 
-  assertNotStrictEquals(root.consumerA.service, root.consumerB.service);
+  assertStrictEquals(consumer.service instanceof _ExplicitTokenImplementation, true);
+});
+
+Deno.test('createInjector() throws when an explicit Needle dependency is not provided', () => {
+  let error: unknown;
+
+  try {
+    createInjector([]).resolve(_MissingProviderConsumer);
+  } catch (caughtError) {
+    error = caughtError;
+  }
+
+  assertStrictEquals(error instanceof Error, true);
+  assertStrictEquals((error as Error).message.includes('No provider(s) found'), true);
 });

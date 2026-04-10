@@ -1,5 +1,4 @@
-// deno-lint-ignore-file verbatim-module-syntax
-import { Body, Controller, Get, IP, Param, Post, Query } from '../../mod.ts';
+import { Body, Controller, Get, inject, IP, Param, Post, Query } from '../../mod.ts';
 
 import { SharedService } from '../shared/shared.service.ts';
 import { SampleService } from './sample.service.ts';
@@ -7,8 +6,8 @@ import { SampleService } from './sample.service.ts';
 @Controller()
 export class SampleController {
   constructor(
-    private readonly _sampleService: SampleService,
-    private readonly _sharedService: SharedService,
+    private readonly _sampleService = inject(SampleService),
+    private readonly _sharedService = inject(SharedService),
   ) {}
 
   @Get()

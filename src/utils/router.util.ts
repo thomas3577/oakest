@@ -1,7 +1,7 @@
 import { Router } from '@oak/oak';
 import type { Context, Middleware, Next, RouterContext } from '@oak/oak';
 
-import { CONTROLLER_METADATA, MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
+import { MIDDLEWARE_METADATA, MODULE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
 import type { ClassConstructor, ControllerClass, CreateRouterOption, ParamData, RouteArgsMetadata } from '../types.ts';
 import { createInjector } from './injector.util.ts';
@@ -26,8 +26,7 @@ const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstru
     controllerNames.push(ControllerTarget.name);
 
     const prefixFull: string | undefined = prefix ? prefix + (routePrefix ? `/${routePrefix}` : '') : routePrefix;
-    const { injectables } = getMetadata<{ injectables: Array<string | symbol | null> }>(CONTROLLER_METADATA, Controller) || { injectables: [] };
-    const controller: ControllerClass = injector.resolve(Controller as unknown as new (...args: any[]) => ControllerClass, injectables);
+    const controller: ControllerClass = injector.resolve(Controller as unknown as new (...args: any[]) => ControllerClass);
     controller.init(prefixFull);
 
     const { path, route } = controller;

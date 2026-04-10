@@ -1,11 +1,8 @@
-import { Container } from '@needle-di/core';
+import { Container, inject as needleInject } from '@needle-di/core';
 
 import { INJECTABLE_OPTIONS_METADATA, INJECTOR_INTERFACES_METADATA } from '../const.ts';
 import type { ClassConstructor } from '../types.ts';
-import { getDependencies as getRegisteredDependencies } from './dependency-registry.util.ts';
 import { getMetadata } from './metadata.util.ts';
-
-type InjectableToken = string | symbol | null;
 
 type InjectableMetadata = {
   implementing: Array<string | symbol>;
@@ -15,8 +12,6 @@ type InjectableMetadata = {
 type InjectableOptions = {
   isSingleton?: boolean;
 };
-
-const isClassConstructor = (value: unknown): value is ClassConstructor => typeof value === 'function';
 
 const getInjectableMetadata = (target: ClassConstructor): InjectableMetadata => {
   const implementing = getMetadata<Array<string | symbol>>(INJECTOR_INTERFACES_METADATA, target) || [];
@@ -30,89 +25,59 @@ const getInjectableMetadata = (target: ClassConstructor): InjectableMetadata => 
 
 class NeedleInjector {
   #container = new Container();
-  #resolving: ClassConstructor[] = [];
+  #boundTokens = new Set<unknown>();
 
-  constructor(private readonly providers: ClassConstructor[] = []) {}
-
-  resolve<T extends object>(target: ClassConstructor<T>, injectables: InjectableToken[] = []): T {
-    return this.#instantiate(target, injectables);
+  constructor(private readonly providers: ClassConstructor[] = []) {
+    this.providers.forEach((provider) => this.#bindProvider(provider));
   }
 
-  #instantiate<T extends object>(target: ClassConstructor<T>, injectables: InjectableToken[] = []): T {
-    const dependencies = this.#getDependencies(target, injectables);
+  resolve<T extends object>(target: ClassConstructor<T>): T {
+    this.#bindClass(target, false);
 
-    return new target(...dependencies);
+    return this.#container.get(target);
   }
 
-  #getDependencies(target: ClassConstructor, injectables: InjectableToken[] = []): unknown[] {
-    const registeredDependencies = getRegisteredDependencies(target);
-    const paramTypes: ClassConstructor[] = registeredDependencies || [];
+  #bindProvider(provider: ClassConstructor): void {
+    this.#bindClass(provider, true);
 
-    if (!registeredDependencies && target.length > 0) {
-      throw new Error(`No registered constructor dependencies found for ${target.name}. Run the DI registry generator or register dependencies manually.`);
+    const { implementing } = getInjectableMetadata(provider);
+
+    implementing.forEach((token) => this.#bindAlias(token, provider));
+  }
+
+  #bindClass(target: ClassConstructor, isProvider: boolean): void {
+    if (this.#boundTokens.has(target)) {
+      return;
     }
 
-    return paramTypes.map((requiredProvider, index) => {
-      if (!isClassConstructor(requiredProvider)) {
-        throw new Error(`Provider of type ${String(requiredProvider)} not found for ${target.name}`);
-      }
+    const { isSingleton } = getInjectableMetadata(target);
 
-      const provider = this.#findProvider(requiredProvider, injectables[index]);
+    if (isProvider && !isSingleton) {
+      throw new Error(`Provider ${target.name} uses isSingleton: false, but explicit Needle injection only supports singleton providers.`);
+    }
 
-      if (!provider) {
-        throw new Error(`Provider of type ${requiredProvider.name} not found for ${target.name}`);
-      }
-
-      return this.#resolveProvider(provider);
+    this.#container.bind({
+      provide: target,
+      useClass: target,
     });
+
+    this.#boundTokens.add(target);
   }
 
-  #resolveProvider<T extends object>(provider: ClassConstructor<T>): T {
-    const { isSingleton } = getInjectableMetadata(provider);
-
-    if (!isSingleton) {
-      return this.#constructProvider(provider);
+  #bindAlias(token: string | symbol, provider: ClassConstructor): void {
+    if (this.#boundTokens.has(token)) {
+      return;
     }
 
-    if (!this.#container.has(provider)) {
-      this.#container.bind({
-        provide: provider,
-        useFactory: () => this.#constructProvider(provider),
-      });
-    }
+    this.#container.bind({
+      provide: token as never,
+      useExisting: provider as never,
+    });
 
-    return this.#container.get(provider);
-  }
-
-  #constructProvider<T extends object>(provider: ClassConstructor<T>): T {
-    if (this.#resolving.includes(provider)) {
-      const cycle = [...this.#resolving, provider].map((entry) => entry.name).join(' -> ');
-
-      throw new Error(`Circular dependency detected: ${cycle}`);
-    }
-
-    this.#resolving.push(provider);
-
-    try {
-      return this.#instantiate(provider);
-    } finally {
-      this.#resolving.pop();
-    }
-  }
-
-  #findProvider(requiredProvider: ClassConstructor, injectable?: InjectableToken): ClassConstructor | undefined {
-    if (injectable !== undefined && injectable !== null) {
-      const tokenMatch = this.providers.find((provider) => getInjectableMetadata(provider).implementing.includes(injectable));
-
-      if (tokenMatch) {
-        return tokenMatch;
-      }
-    }
-
-    return this.providers.find((provider) => provider === requiredProvider || requiredProvider.prototype?.isPrototypeOf(provider.prototype)) || requiredProvider;
+    this.#boundTokens.add(token);
   }
 }
 
 export const createInjector = (providers: ClassConstructor[] = []): NeedleInjector => new NeedleInjector(providers);
 
-export const inject = <T extends object>(target: ClassConstructor<T>): T => createInjector().resolve(target);
+export { needleInject as inject };

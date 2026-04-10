@@ -1,6 +1,5 @@
 import { Application } from '@oak/oak';
 import { assignModule } from '../mod.ts';
-import './oakest.di.generated.ts';
 
 import { AppModule } from './app.module.ts';
 
