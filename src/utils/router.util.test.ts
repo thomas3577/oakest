@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from '@std/assert';
+import { assertEquals, assertExists, assertThrows } from '@std/assert';
 import { Application } from '@oak/oak';
 
 import { Controller } from '../decorators/controller.decorator.ts';
@@ -82,6 +82,43 @@ Deno.test('assignModule() does not leak controller deduplication across separate
   assertEquals(await secondResponse.text(), 'repeat');
 });
 
+const FirstDuplicateController = (() => {
+  @Controller('first-duplicate')
+  class DuplicateController {
+    @Get('ping')
+    ping() {
+      return 'first';
+    }
+  }
+
+  return DuplicateController;
+})();
+
+const SecondDuplicateController = (() => {
+  @Controller('second-duplicate')
+  class DuplicateController {
+    @Get('ping')
+    ping() {
+      return 'second';
+    }
+  }
+
+  return DuplicateController;
+})();
+
+@Module({ controllers: [FirstDuplicateController, SecondDuplicateController] })
+class DuplicateNameModule {}
+
+Deno.test('assignModule() registers distinct controllers even when they share the same class name', async () => {
+  const firstResponse = await handleModuleRequest(DuplicateNameModule, '/first-duplicate/ping');
+  const secondResponse = await handleModuleRequest(DuplicateNameModule, '/second-duplicate/ping');
+
+  assertEquals(firstResponse.status, 200);
+  assertEquals(await firstResponse.text(), 'first');
+  assertEquals(secondResponse.status, 200);
+  assertEquals(await secondResponse.text(), 'second');
+});
+
 @Injectable()
 class SharedProvider {
   readonly id = crypto.randomUUID();
@@ -129,4 +166,12 @@ Deno.test('assignModule() aggregates deduplicated providers across nested module
   assertEquals(parentResponse.status, 200);
   assertEquals(childResponse.status, 200);
   assertEquals(parentId, childId);
+});
+
+class MissingModuleMetadata {}
+
+Deno.test('assignModule() throws a clear error when @Module() metadata is missing', () => {
+  const error = assertThrows(() => assignModule(MissingModuleMetadata as any)) as Error;
+
+  assertEquals(error.message, 'Module MissingModuleMetadata is missing @Module() metadata.');
 });

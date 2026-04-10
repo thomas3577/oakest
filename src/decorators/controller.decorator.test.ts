@@ -71,14 +71,14 @@ class RuntimeController {
 
 const runtimeControllerPrototype = Object.getPrototypeOf(RuntimeController.prototype);
 
-registerMiddlewareMethodDecorator(runtimeControllerPrototype as any, 'index', async (ctx, next) => {
+registerMiddlewareMethodDecorator(runtimeControllerPrototype, 'index', async (ctx, next) => {
   middlewareEvents.push('middleware:before');
   ctx.response.headers.set('x-middleware', 'ran');
   await next();
   middlewareEvents.push('middleware:after');
 });
 
-registerCustomRouteParamDecorator(runtimeControllerPrototype as any, 'index', 2)('extra')(((ctx: any, data: unknown) => `${ctx.params.id}:${String(data)}`) as any);
+registerCustomRouteParamDecorator(runtimeControllerPrototype, 'index', 2)('extra')(((ctx: any, data: unknown) => `${ctx.params.id}:${String(data)}`) as any);
 
 @Controller('empty')
 class UndefinedResultController {
