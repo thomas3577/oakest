@@ -271,18 +271,18 @@ export class SampleController {
 
 Available resolvers:
 
-| name | result |
-| :--- | :--- |
-| `req(key?)` | `context.request` or a request property |
-| `res(key?)` | `context.response` or a response property |
-| `next()` | Oak `next` handler |
-| `query(key?)` | `URLSearchParams` or a single query value |
-| `param(key?)` | route params object or a single route param |
-| `body(key?)` | parsed JSON body or a single body property |
-| `headers(name?)` | all headers as an object or a single header value |
-| `ip()` | client IP |
-| `ctx()` | full Oak router context |
-| `custom(handler, data?)` | custom async/sync value resolver |
+| name                     | result                                            |
+| :----------------------- | :------------------------------------------------ |
+| `req(key?)`              | `context.request` or a request property           |
+| `res(key?)`              | `context.response` or a response property         |
+| `next()`                 | Oak `next` handler                                |
+| `query(key?)`            | `URLSearchParams` or a single query value         |
+| `param(key?)`            | route params object or a single route param       |
+| `body(key?)`             | parsed JSON body or a single body property        |
+| `headers(name?)`         | all headers as an object or a single header value |
+| `ip()`                   | client IP                                         |
+| `ctx()`                  | full Oak router context                           |
+| `custom(handler, data?)` | custom async/sync value resolver                  |
 
 If the handler declares exactly one parameter and no resolver array, Oakest still injects `ctx` automatically.
 
@@ -434,7 +434,7 @@ export default class SampleController {
 Custom route inputs can be declared inline with `custom(...)`.
 
 ```typescript
-import { Controller, Get, custom } from '@dx/oakest';
+import { Controller, custom, Get } from '@dx/oakest';
 
 @Controller('users')
 export class UsersController {
@@ -448,7 +448,7 @@ export class UsersController {
 Resolvers can be asynchronous too:
 
 ```typescript
-import { Controller, Get, custom } from '@dx/oakest';
+import { Controller, custom, Get } from '@dx/oakest';
 
 @Controller('products')
 export class ProductsController {
