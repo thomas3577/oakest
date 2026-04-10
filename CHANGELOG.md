@@ -6,4 +6,4 @@
 - Removed legacy parameter decorators in favor of route argument resolvers on `@Get/@Post/...`.
 - Removed `reflect-metadata` and emitted constructor metadata from the DI flow.
 - Switched constructor injection to explicit `inject(...)` usage with `@needle-di/core`.
-- Updated custom middleware decorator integration to use standard decorator context via `registerMiddlewareMethodDecorator(context, handler)`
+- Updated custom middleware decorator integration to use standard decorator context via `registerMiddlewareMethodDecorator(context, handler)`.
