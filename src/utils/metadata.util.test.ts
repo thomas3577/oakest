@@ -10,66 +10,107 @@ type ReflectMetadataApi = typeof Reflect & {
   metadata?: (metadataKey: string | symbol, value: unknown) => ((target: object, propertyKey?: string | symbol) => void) | undefined;
 };
 
-const CLASS_KEY = Symbol('class-key');
-const MEMBER_KEY = Symbol('member-key');
-const DECORATOR_KEY = Symbol('decorator-key');
-const SHIM_KEY = Symbol('shim-key');
 const reflectApi = Reflect as ReflectMetadataApi;
 
-class MetadataBase {
-  method() {}
-}
-
-class MetadataChild extends MetadataBase {
-  override method() {}
-}
-
 Deno.test('defineMetadata() and getOwnMetadata() store class metadata on the exact target', () => {
-  defineMetadata(CLASS_KEY, 'base-value', MetadataBase.prototype);
+  const classKey = Symbol('class-key');
 
-  assertEquals(getOwnMetadata(CLASS_KEY, MetadataBase.prototype), 'base-value');
-  assertEquals(getOwnMetadata(CLASS_KEY, MetadataChild.prototype), undefined);
+  class MetadataBase {
+    method() {}
+  }
+
+  class MetadataChild extends MetadataBase {
+    override method() {}
+  }
+
+  defineMetadata(classKey, 'base-value', MetadataBase.prototype);
+
+  assertEquals(getOwnMetadata(classKey, MetadataBase.prototype), 'base-value');
+  assertEquals(getOwnMetadata(classKey, MetadataChild.prototype), undefined);
 });
 
 Deno.test('defineMetadata() and getOwnMetadata() store member metadata on the exact target', () => {
-  defineMetadata(MEMBER_KEY, 'member-value', MetadataBase.prototype, 'method');
+  const memberKey = Symbol('member-key');
 
-  assertEquals(getOwnMetadata(MEMBER_KEY, MetadataBase.prototype, 'method'), 'member-value');
-  assertEquals(getOwnMetadata(MEMBER_KEY, MetadataChild.prototype, 'method'), undefined);
+  class MetadataBase {
+    method() {}
+  }
+
+  class MetadataChild extends MetadataBase {
+    override method() {}
+  }
+
+  defineMetadata(memberKey, 'member-value', MetadataBase.prototype, 'method');
+
+  assertEquals(getOwnMetadata(memberKey, MetadataBase.prototype, 'method'), 'member-value');
+  assertEquals(getOwnMetadata(memberKey, MetadataChild.prototype, 'method'), undefined);
 });
 
 Deno.test('getMetadata() resolves class and member metadata through the prototype chain', () => {
-  defineMetadata(CLASS_KEY, 'inherited-class', MetadataBase.prototype);
-  defineMetadata(MEMBER_KEY, 'inherited-member', MetadataBase.prototype, 'method');
+  const classKey = Symbol('class-key');
+  const memberKey = Symbol('member-key');
 
-  assertEquals(getMetadata(CLASS_KEY, MetadataChild.prototype), 'inherited-class');
-  assertEquals(getMetadata(MEMBER_KEY, MetadataChild.prototype, 'method'), 'inherited-member');
+  class MetadataBase {
+    method() {}
+  }
+
+  class MetadataChild extends MetadataBase {
+    override method() {}
+  }
+
+  defineMetadata(classKey, 'inherited-class', MetadataBase.prototype);
+  defineMetadata(memberKey, 'inherited-member', MetadataBase.prototype, 'method');
+
+  assertEquals(getMetadata(classKey, MetadataChild.prototype), 'inherited-class');
+  assertEquals(getMetadata(memberKey, MetadataChild.prototype, 'method'), 'inherited-member');
 });
 
 Deno.test('createMetadataDecorator() writes metadata for class members', () => {
-  const decorator = createMetadataDecorator(DECORATOR_KEY, 'decorated-value');
+  const decoratorKey = Symbol('decorator-key');
+
+  class MetadataBase {
+    method() {}
+  }
+
+  const decorator = createMetadataDecorator(decoratorKey, 'decorated-value');
 
   decorator(MetadataBase.prototype, 'method');
 
-  assertEquals(getMetadata(DECORATOR_KEY, MetadataBase.prototype, 'method'), 'decorated-value');
+  assertEquals(getMetadata(decoratorKey, MetadataBase.prototype, 'method'), 'decorated-value');
 });
 
 Deno.test('reflect shim exposes metadata helpers backed by the internal store', () => {
-  reflectApi.defineMetadata?.(SHIM_KEY, 'shim-class', MetadataBase.prototype);
-  reflectApi.defineMetadata?.(SHIM_KEY, 'shim-member', MetadataBase.prototype, 'method');
+  const shimKey = Symbol('shim-key');
 
-  assertEquals(reflectApi.getOwnMetadata?.(SHIM_KEY, MetadataBase.prototype), 'shim-class');
-  assertEquals(reflectApi.getMetadata?.(SHIM_KEY, MetadataChild.prototype), 'shim-class');
-  assertEquals(reflectApi.getOwnMetadata?.(SHIM_KEY, MetadataBase.prototype, 'method'), 'shim-member');
-  assertEquals(reflectApi.getMetadata?.(SHIM_KEY, MetadataChild.prototype, 'method'), 'shim-member');
+  class MetadataBase {
+    method() {}
+  }
+
+  class MetadataChild extends MetadataBase {
+    override method() {}
+  }
+
+  reflectApi.defineMetadata?.(shimKey, 'shim-class', MetadataBase.prototype);
+  reflectApi.defineMetadata?.(shimKey, 'shim-member', MetadataBase.prototype, 'method');
+
+  assertEquals(reflectApi.getOwnMetadata?.(shimKey, MetadataBase.prototype), 'shim-class');
+  assertEquals(reflectApi.getMetadata?.(shimKey, MetadataChild.prototype), 'shim-class');
+  assertEquals(reflectApi.getOwnMetadata?.(shimKey, MetadataBase.prototype, 'method'), 'shim-member');
+  assertEquals(reflectApi.getMetadata?.(shimKey, MetadataChild.prototype, 'method'), 'shim-member');
 });
 
 Deno.test('reflect shim metadata() decorator writes through to the shared metadata store', () => {
-  const shimDecorator = reflectApi.metadata?.(SHIM_KEY, 'shim-decorator');
+  const shimKey = Symbol('shim-key');
+
+  class MetadataChild {
+    method() {}
+  }
+
+  const shimDecorator = reflectApi.metadata?.(shimKey, 'shim-decorator');
 
   assertStrictEquals(typeof shimDecorator, 'function');
 
   shimDecorator?.(MetadataChild.prototype, 'method');
 
-  assertEquals(getMetadata(SHIM_KEY, MetadataChild.prototype, 'method'), 'shim-decorator');
+  assertEquals(getMetadata(shimKey, MetadataChild.prototype, 'method'), 'shim-decorator');
 });

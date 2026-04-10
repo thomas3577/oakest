@@ -45,13 +45,13 @@ class LeafController {
   }
 }
 
-@Module({ controllers: [LeafController], routePrefix: 'leaf-prefix' })
+@Module({ controllers: [LeafController], routePrefix: '/leaf-prefix' })
 class LeafModule {}
 
-@Module({ modules: [LeafModule], routePrefix: 'mid-prefix' })
+@Module({ modules: [LeafModule], routePrefix: '/mid-prefix/' })
 class MidModule {}
 
-@Module({ modules: [MidModule], routePrefix: 'root-prefix' })
+@Module({ modules: [MidModule], routePrefix: 'root-prefix/' })
 class NestedRootModule {}
 
 Deno.test('assignModule() composes routePrefix values across nested modules', async () => {
@@ -84,7 +84,7 @@ Deno.test('assignModule() does not leak controller deduplication across separate
 
 @Injectable()
 class SharedProvider {
-  readonly id = 'shared-provider';
+  readonly id = crypto.randomUUID();
 }
 
 @Controller('parent')
@@ -114,11 +114,19 @@ class ProviderChildModule {}
 class ProviderRootModule {}
 
 Deno.test('assignModule() aggregates deduplicated providers across nested modules', async () => {
-  const parentResponse = await handleModuleRequest(ProviderRootModule, '/parent/id');
-  const childResponse = await handleModuleRequest(ProviderRootModule, '/child/id');
+  const app = new Application();
+  app.use(assignModule(ProviderRootModule));
+
+  const parentResponse = await app.handle(new Request('http://localhost/parent/id'));
+  const childResponse = await app.handle(new Request('http://localhost/child/id'));
+
+  assertExists(parentResponse);
+  assertExists(childResponse);
+
+  const parentId = await parentResponse.text();
+  const childId = await childResponse.text();
 
   assertEquals(parentResponse.status, 200);
-  assertEquals(await parentResponse.text(), 'shared-provider');
   assertEquals(childResponse.status, 200);
-  assertEquals(await childResponse.text(), 'shared-provider');
+  assertEquals(parentId, childId);
 });

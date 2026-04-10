@@ -7,20 +7,28 @@ import type { ClassConstructor, ControllerClass, CreateRouterOption, ParamData, 
 import { createInjector } from './injector.util.ts';
 import { defineMetadata, getMetadata } from './metadata.util.ts';
 
+type Injector = ReturnType<typeof createInjector>;
+
 export const isUndefined = (obj: any): obj is undefined => typeof obj === 'undefined';
 export const isString = (fn: any): fn is string => typeof fn === 'string';
 export const isNil = (obj: any): obj is null | undefined => isUndefined(obj) || obj === null;
 
 const mergeRoutePrefix = (prefix?: string, routePrefix?: string): string | undefined => {
-  return prefix ? prefix + (routePrefix ? `/${routePrefix}` : '') : routePrefix;
+  const normalizedPrefix = prefix?.replace(/\/+$/, '');
+  const normalizedRoutePrefix = routePrefix?.replace(/^\/+/, '');
+
+  if (normalizedPrefix && normalizedRoutePrefix) {
+    return `${normalizedPrefix}/${normalizedRoutePrefix}`;
+  }
+
+  return normalizedPrefix || normalizedRoutePrefix;
 };
 
-const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstructor[], controllerNames: Set<string>, prefix?: string, router = new Router()): Router<Record<string, any>> => {
+const createRouter = (moduleOptions: CreateRouterOption, injector: Injector, controllerNames: Set<string>, prefix?: string, router = new Router()): Router<Record<string, any>> => {
   const { controllers, routePrefix } = moduleOptions;
-  const injector = createInjector(providers);
 
   controllers?.forEach((Controller: ClassConstructor<unknown>) => {
-    const controllerName = Object.getPrototypeOf(Controller).name;
+    const controllerName = Object.getPrototypeOf(Controller).name || Controller.name || Controller.constructor.name;
     if (controllerNames.has(controllerName)) {
       return;
     }
@@ -43,13 +51,12 @@ const createRouter = (moduleOptions: CreateRouterOption, providers: ClassConstru
   return router;
 };
 
-const getRouter = (module: ClassConstructor, controllerNames: Set<string>, prefix?: string, router?: Router): Router<Record<string, any>> => {
+const getRouter = (module: ClassConstructor, injector: Injector, controllerNames: Set<string>, prefix?: string, router?: Router): Router<Record<string, any>> => {
   const moduleOption: CreateRouterOption = getMetadata(MODULE_METADATA, module.prototype) as CreateRouterOption;
-  const providers: ClassConstructor[] = getProviders(module);
-  const newRouter: Router<Record<string, any>> = createRouter(moduleOption, providers, controllerNames, prefix, router);
+  const newRouter: Router<Record<string, any>> = createRouter(moduleOption, injector, controllerNames, prefix, router);
   const prefixFull = mergeRoutePrefix(prefix, moduleOption.routePrefix);
 
-  moduleOption.modules?.forEach((module) => getRouter(module, controllerNames, prefixFull, newRouter)) || [];
+  moduleOption.modules?.forEach((module) => getRouter(module, injector, controllerNames, prefixFull, newRouter)) || [];
 
   return newRouter;
 };
@@ -74,7 +81,8 @@ const getProviders = (module: ClassConstructor, providers: ClassConstructor[] = 
  * @returns {Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>>} the middleware
  */
 export const assignModule = (module: ClassConstructor): Middleware<Record<string, any>, Context<Record<string, any>, Record<string, any>>> => {
-  const router: Router<Record<string, any>> = getRouter(module, new Set<string>());
+  const injector = createInjector(getProviders(module));
+  const router: Router<Record<string, any>> = getRouter(module, injector, new Set<string>());
   const routes = router.routes();
 
   return routes;
