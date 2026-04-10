@@ -4,7 +4,7 @@
 [![JSR Score](https://jsr.io/badges/@dx/oakest/score)](https://jsr.io/@dx/oakest/score)
 [![ci](https://github.com/thomas3577/oakest/actions/workflows/deno.yml/badge.svg)](https://github.com/thomas3577/oakest/actions/workflows/deno.yml)
 
-**This is a fork of** [biga816/oak-decorators](https://github.com/biga816/oak-decorators)
+**Originally based on** [biga816/oak-decorators](https://github.com/biga816/oak-decorators)
 
 NestJS-style decorators library for Deno's [oak](https://github.com/oakserver/oak).
 
