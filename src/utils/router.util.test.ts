@@ -171,7 +171,7 @@ Deno.test('assignModule() aggregates deduplicated providers across nested module
 class MissingModuleMetadata {}
 
 Deno.test('assignModule() throws a clear error when @Module() metadata is missing', () => {
-  const error = assertThrows(() => assignModule(MissingModuleMetadata as any)) as Error;
+  const error = assertThrows(() => assignModule(MissingModuleMetadata as unknown as ClassConstructor)) as Error;
 
   assertEquals(error.message, 'Module MissingModuleMetadata is missing @Module() metadata.');
 });

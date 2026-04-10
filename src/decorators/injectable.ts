@@ -18,7 +18,7 @@ export { inject };
 export function Injectable({ implementing = [], isSingleton }: InjectableOptions = {}): ClassDecorator {
   const implementings = Array.isArray(implementing) ? implementing : [implementing];
 
-  return (target: any) => {
+  return (target: object) => {
     if (implementings.length > 0) {
       defineMetadata(INJECTOR_INTERFACES_METADATA, implementings, target);
     }

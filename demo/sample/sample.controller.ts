@@ -16,13 +16,13 @@ export class SampleController {
   }
 
   @Post()
-  post(@Body() body: any) {
+  post(@Body() body: Record<string, unknown>) {
     return body;
   }
 
   @Get('test/:id')
-  test(@Param('id') id: string, @Query() test: any, @IP() ip: string) {
-    return { id, ...test, ip };
+  test(@Param('id') id: string, @Query() test: URLSearchParams, @IP() ip: string) {
+    return { id, ...Object.fromEntries(test), ip };
   }
 
   @Get('shared')

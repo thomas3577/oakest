@@ -2,6 +2,7 @@ import { assertEquals, assertExists } from '@std/assert';
 
 import { ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
+import type { RouteArgsMetadata } from '../types.ts';
 import { getMetadata } from '../utils/metadata.util.ts';
 import { Body, Ctx, Headers, IP, Next, Param, Query, Req, Res } from './route-params.decorator.ts';
 
@@ -34,7 +35,7 @@ Deno.test('route param decorators store the expected metadata entries', () => {
   Headers('x-token')(RouteParamController.prototype, 'handler', 7);
   IP()(RouteParamController.prototype, 'handler', 8);
 
-  const metadata = getMetadata<any[]>(ROUTE_ARGS_METADATA, RouteParamController.prototype, 'handler');
+  const metadata = getMetadata<RouteArgsMetadata[]>(ROUTE_ARGS_METADATA, RouteParamController.prototype, 'handler');
 
   assertExists(metadata);
   assertEquals(metadata, [
@@ -51,10 +52,10 @@ Deno.test('route param decorators store the expected metadata entries', () => {
 });
 
 Deno.test('route param decorators ignore non-string custom data payloads', () => {
-  Query({ invalid: true } as any)(InvalidDataController.prototype, 'handler', 0);
-  Body(123 as any)(InvalidDataController.prototype, 'handler', 1);
+  Query({ invalid: true } as unknown as string)(InvalidDataController.prototype, 'handler', 0);
+  Body(123 as unknown as string)(InvalidDataController.prototype, 'handler', 1);
 
-  const metadata = getMetadata<any[]>(ROUTE_ARGS_METADATA, InvalidDataController.prototype, 'handler');
+  const metadata = getMetadata<RouteArgsMetadata[]>(ROUTE_ARGS_METADATA, InvalidDataController.prototype, 'handler');
 
   assertExists(metadata);
   assertEquals(metadata, [

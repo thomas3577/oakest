@@ -1,6 +1,7 @@
 import { assertEquals, assertExists } from '@std/assert';
 
 import { METHOD_METADATA } from '../const.ts';
+import type { ActionMetadata } from '../types.ts';
 import { getMetadata } from '../utils/metadata.util.ts';
 import { All, Delete, Get, Patch, Post, Put } from './http-methods.decorator.ts';
 
@@ -25,7 +26,7 @@ class HttpMethodController {
 }
 
 Deno.test('HTTP method decorators register method metadata for each decorated handler', () => {
-  const metadata = getMetadata<any[]>(METHOD_METADATA, HttpMethodController.prototype);
+  const metadata = getMetadata<ActionMetadata[]>(METHOD_METADATA, HttpMethodController.prototype);
 
   assertExists(metadata);
   assertEquals(metadata, [
@@ -53,7 +54,7 @@ Deno.test('HTTP method decorators append metadata entries instead of overwriting
   Get('first')(ManualMethodController.prototype, 'first', firstDescriptor);
   Post('second')(ManualMethodController.prototype, 'second', secondDescriptor);
 
-  const metadata = getMetadata<any[]>(METHOD_METADATA, ManualMethodController.prototype);
+  const metadata = getMetadata<ActionMetadata[]>(METHOD_METADATA, ManualMethodController.prototype);
 
   assertExists(metadata);
   assertEquals(metadata, [

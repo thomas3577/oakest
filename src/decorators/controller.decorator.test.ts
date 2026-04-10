@@ -1,10 +1,12 @@
 import { assertEquals, assertExists } from '@std/assert';
 import { Application, Router } from '@oak/oak';
+import type { RouterContext } from '@oak/oak';
 
 import { Get, Post } from './http-methods.decorator.ts';
 import { Body, Ctx, Headers, IP, Next, Param, Query, Req, Res } from './route-params.decorator.ts';
 import { Controller } from './controller.decorator.ts';
 import { registerCustomRouteParamDecorator, registerMiddlewareMethodDecorator } from '../utils/router.util.ts';
+import type { ControllerClass } from '../types.ts';
 
 const mountController = (controller: { path?: string; route?: Router; init(routePrefix?: string): void }, routePrefix?: string) => {
   controller.init(routePrefix);
@@ -25,9 +27,9 @@ const mountController = (controller: { path?: string; route?: Router; init(route
 class ParameterController {
   @Post(':id')
   create(
-    @Ctx() ctx: any,
-    @Req() req: Request,
-    @Res() res: any,
+    @Ctx() ctx: RouterContext<string>,
+    @Req() req: RouterContext<string>['request'],
+    @Res() res: RouterContext<string>['response'],
     @Next() next: () => Promise<unknown>,
     @Query() query: URLSearchParams,
     @Param() params: Record<string, string>,
@@ -78,7 +80,7 @@ registerMiddlewareMethodDecorator(runtimeControllerPrototype, 'index', async (ct
   middlewareEvents.push('middleware:after');
 });
 
-registerCustomRouteParamDecorator(runtimeControllerPrototype, 'index', 2)('extra')(((ctx: any, data: unknown) => `${ctx.params.id}:${String(data)}`) as any);
+registerCustomRouteParamDecorator(runtimeControllerPrototype, 'index', 2)('extra')((ctx: RouterContext<string>, data: unknown) => `${ctx.params.id}:${String(data)}`);
 
 @Controller('empty')
 class UndefinedResultController {
@@ -89,7 +91,7 @@ class UndefinedResultController {
 }
 
 Deno.test('Controller init() composes prefixes and injects standard route params', async () => {
-  const app = mountController(new ParameterController() as any, 'api');
+  const app = mountController(new ParameterController() as unknown as ControllerClass, 'api');
   const response = await app.handle(
     new Request('http://localhost/api/users/123?q=abc', {
       method: 'POST',
@@ -119,7 +121,7 @@ Deno.test('Controller init() composes prefixes and injects standard route params
 Deno.test('Controller routes execute middleware before handlers and resolve custom params', async () => {
   middlewareEvents.length = 0;
 
-  const app = mountController(new RuntimeController() as any);
+  const app = mountController(new RuntimeController() as unknown as ControllerClass);
   const response = await app.handle(new Request('http://localhost/tasks/42?filter=open'));
 
   assertExists(response);
@@ -138,7 +140,7 @@ Deno.test('Controller routes execute middleware before handlers and resolve cust
 });
 
 Deno.test('Controller handlers that return undefined leave the response untouched', async () => {
-  const app = mountController(new UndefinedResultController() as any);
+  const app = mountController(new UndefinedResultController() as unknown as ControllerClass);
   const response = await app.handle(new Request('http://localhost/empty/noop'));
 
   assertExists(response);

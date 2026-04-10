@@ -6,21 +6,26 @@ import * as log from '@std/log';
 
 import { RouteParamTypes } from '../enums.ts';
 import { METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
-import type { ActionMetadata, ControllerClass, RouteArgsMetadata } from '../types.ts';
+import type { ActionMetadata, ControllerClass, HTTPMethods, RouteArgsMetadata } from '../types.ts';
 import { getMetadata } from '../utils/metadata.util.ts';
 
 type Next = () => Promise<unknown>;
+type ControllerConstructor = new (...instance: never[]) => object;
+type RouterMethodInvoker = Router & Record<HTTPMethods, (path: string, ...handlers: unknown[]) => Router>;
+type ControllerMethodMap = Record<string, (...args: unknown[]) => unknown>;
 
 /**
  * Controller decorator
  *
  * @param {string} options - Path for the controller
  */
-export function Controller<T extends { new (...instance: any[]): object }>(options?: string): (fn: T) => any {
+export function Controller<T extends ControllerConstructor>(options?: string): (fn: T) => T {
   const path: string | undefined = options;
 
   const result = (fn: T) => {
-    return class extends fn implements ControllerClass {
+    const BaseController = fn as ControllerConstructor;
+
+    return class extends BaseController implements ControllerClass {
       #path?: string;
       #route?: Router;
 
@@ -37,14 +42,14 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
           const middlewaresMetadata = getMetadata(MIDDLEWARE_METADATA, fn.prototype, meta.functionName);
           const middlewares = Array.isArray(middlewaresMetadata) ? middlewaresMetadata : middlewaresMetadata ? [middlewaresMetadata] : [];
 
-          (route as any)[meta.method](`/${meta.path}`, ...middlewares, async (context: RouterContext<string>, next: Next) => {
+          (route as RouterMethodInvoker)[meta.method](`/${meta.path}`, ...middlewares, async (context: RouterContext<string>, next: Next) => {
             const inputs = await Promise.all(
               argsMetadataList
                 .sort((a, b) => a.index - b.index)
                 .map(async (data) => await getContextData(data, context, next)),
             );
 
-            const result = await (this as any)[meta.functionName](...inputs);
+            const result = await (this as unknown as ControllerMethodMap)[meta.functionName](...inputs);
             if (result === undefined) return;
 
             if (context.response.writable) {
@@ -67,7 +72,7 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
       get route(): Router | undefined {
         return this.#route;
       }
-    };
+    } as unknown as T;
   };
 
   return result;
@@ -80,19 +85,7 @@ function logMapping(meta: ActionMetadata, path?: string): void {
   log.info(`${methodName} ${fullPath}`);
 }
 
-type TContextData =
-  | RouterContext<string, Record<string, any>, Record<string, any>>
-  | Request
-  | Response
-  | Next
-  | URLSearchParams
-  | Record<string, any>
-  | URLSearchParams
-  | string
-  | null
-  | undefined;
-
-async function getContextData(args: RouteArgsMetadata, ctx: RouterContext<string>, next: Next): Promise<TContextData> {
+async function getContextData(args: RouteArgsMetadata, ctx: RouterContext<string>, next: Next): Promise<unknown> {
   const { paramType, data } = args;
   const req = ctx.request;
   const res = ctx.response;

@@ -32,7 +32,8 @@ export interface RouteArgsMetadata {
   paramType: RouteParamTypes;
   index: number;
   data?: ParamData;
-  handler?: (ctx: RouterContext<string>, data?: ParamData) => any;
+  handler?: (ctx: RouterContext<string>, data?: ParamData) => unknown;
 }
 
+// deno-lint-ignore no-explicit-any -- Constructor parameter types must stay permissive for assignability across decorated classes.
 export type ClassConstructor<T = object> = new (...args: any[]) => T;
