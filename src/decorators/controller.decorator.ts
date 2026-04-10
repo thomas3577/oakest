@@ -1,3 +1,5 @@
+import '../utils/reflect-shim.ts';
+
 import { Router } from '@oak/oak';
 import type { RouterContext } from '@oak/oak';
 import * as log from '@std/log';
@@ -5,6 +7,7 @@ import * as log from '@std/log';
 import { RouteParamTypes } from '../enums.ts';
 import { CONTROLLER_METADATA, METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import type { ActionMetadata, ControllerClass, RouteArgsMetadata } from '../types.ts';
+import { defineMetadata, getMetadata } from '../utils/metadata.util.ts';
 
 type Next = () => Promise<unknown>;
 
@@ -23,7 +26,7 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
   const injectables: Array<string | symbol | null> = typeof options === 'string' ? [] : options?.injectables || [];
 
   const result = (fn: T) => {
-    Reflect.defineMetadata(CONTROLLER_METADATA, { injectables }, fn);
+    defineMetadata(CONTROLLER_METADATA, { injectables }, fn);
 
     return class extends fn implements ControllerClass {
       #path?: string;
@@ -35,11 +38,11 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
         this.#path = prefix + (path ? `/${path}` : '');
 
         const route = new Router();
-        const list: ActionMetadata[] = Reflect.getMetadata(METHOD_METADATA, fn.prototype) || [];
+        const list: ActionMetadata[] = getMetadata(METHOD_METADATA, fn.prototype) || [];
 
         list.forEach((meta: ActionMetadata) => {
-          const argsMetadataList: RouteArgsMetadata[] = Reflect.getMetadata(ROUTE_ARGS_METADATA, fn.prototype, meta.functionName) || [];
-          const middlewaresMetadata = Reflect.getMetadata(MIDDLEWARE_METADATA, fn.prototype, meta.functionName);
+          const argsMetadataList: RouteArgsMetadata[] = getMetadata(ROUTE_ARGS_METADATA, fn.prototype, meta.functionName) || [];
+          const middlewaresMetadata = getMetadata(MIDDLEWARE_METADATA, fn.prototype, meta.functionName);
           const middlewares = Array.isArray(middlewaresMetadata) ? middlewaresMetadata : middlewaresMetadata ? [middlewaresMetadata] : [];
 
           (route as any)[meta.method](`/${meta.path}`, ...middlewares, async (context: RouterContext<string>, next: Next) => {

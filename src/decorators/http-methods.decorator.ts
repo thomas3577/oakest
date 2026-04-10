@@ -1,5 +1,8 @@
+import '../utils/reflect-shim.ts';
+
 import { METHOD_METADATA } from '../const.ts';
 import type { ActionMetadata, HTTPMethods } from '../types.ts';
+import { defineMetadata, getMetadata } from '../utils/metadata.util.ts';
 
 /**
  * HTTP Method GET
@@ -61,12 +64,12 @@ function mappingMethod(method: HTTPMethods): HttpMethod {
 }
 
 function addMetadata<T>(value: T, target: object, key: symbol): void {
-  const list = Reflect.getMetadata(key, target);
+  const list = getMetadata<T[]>(key, target);
   if (list) {
     list.push(value);
 
     return;
   }
 
-  Reflect.defineMetadata(key, [value], target);
+  defineMetadata(key, [value], target);
 }

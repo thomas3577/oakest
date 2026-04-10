@@ -1,5 +1,8 @@
+import '../utils/reflect-shim.ts';
+
 import { INJECTABLE_OPTIONS_METADATA, INJECTOR_INTERFACES_METADATA } from '../const.ts';
 import { inject } from '../utils/injector.util.ts';
+import { defineMetadata } from '../utils/metadata.util.ts';
 
 export type Implementing = string | symbol | string[] | symbol[];
 export type ImplementingOptions = { implementing?: Implementing };
@@ -17,10 +20,10 @@ export function Injectable({ implementing = [], isSingleton }: InjectableOptions
 
   return (target: any) => {
     if (implementings.length > 0) {
-      Reflect.defineMetadata(INJECTOR_INTERFACES_METADATA, implementings, target);
+      defineMetadata(INJECTOR_INTERFACES_METADATA, implementings, target);
     }
 
-    Reflect.defineMetadata(INJECTABLE_OPTIONS_METADATA, {
+    defineMetadata(INJECTABLE_OPTIONS_METADATA, {
       isSingleton: isSingleton !== false,
     }, target);
   };

@@ -2,6 +2,7 @@ import { Container } from '@needle-di/core';
 
 import { INJECTABLE_OPTIONS_METADATA, INJECTOR_INTERFACES_METADATA } from '../const.ts';
 import type { ClassConstructor } from '../types.ts';
+import { getMetadata } from './metadata.util.ts';
 
 type InjectableToken = string | symbol | null;
 
@@ -17,8 +18,8 @@ type InjectableOptions = {
 const isClassConstructor = (value: unknown): value is ClassConstructor => typeof value === 'function';
 
 const getInjectableMetadata = (target: ClassConstructor): InjectableMetadata => {
-  const implementing = Reflect.getMetadata(INJECTOR_INTERFACES_METADATA, target) || [];
-  const options: InjectableOptions = Reflect.getMetadata(INJECTABLE_OPTIONS_METADATA, target) || {};
+  const implementing = getMetadata<Array<string | symbol>>(INJECTOR_INTERFACES_METADATA, target) || [];
+  const options: InjectableOptions = getMetadata(INJECTABLE_OPTIONS_METADATA, target) || {};
 
   return {
     implementing,
@@ -43,7 +44,7 @@ class NeedleInjector {
   }
 
   #getDependencies(target: ClassConstructor, injectables: InjectableToken[] = []): unknown[] {
-    const paramTypes: ClassConstructor[] = Reflect.getMetadata('design:paramtypes', target) || [];
+    const paramTypes: ClassConstructor[] = getMetadata('design:paramtypes', target) || [];
 
     return paramTypes.map((requiredProvider, index) => {
       if (!isClassConstructor(requiredProvider)) {

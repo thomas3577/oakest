@@ -1,10 +1,9 @@
-import '@npm/reflect-metadata';
-
 import { assertExists } from '@std/assert';
 import { Router } from '@oak/oak';
 
 import { MODULE_METADATA } from '../const.ts';
 import { assignModule } from './router.util.ts';
+import { defineMetadata } from './metadata.util.ts';
 import type { CreateRouterOption } from '../types.ts';
 
 class TestController {
@@ -22,7 +21,7 @@ Deno.test('run assignModule()', async () => {
 
   // Workaround: sync is too fast? And no way to set test timeout (https://github.com/denoland/deno/issues/11133)
   await new Promise((resolve) => {
-    Reflect.defineMetadata(MODULE_METADATA, option, RootModule.prototype);
+    defineMetadata(MODULE_METADATA, option, RootModule.prototype);
     resolve(null);
   });
 
@@ -35,7 +34,7 @@ Deno.test('run assignModule() with routePrefix & controllers', () => {
     controllers: [TestController],
     routePrefix: 'test',
   };
-  Reflect.defineMetadata(MODULE_METADATA, option, RootModule.prototype);
+  defineMetadata(MODULE_METADATA, option, RootModule.prototype);
 
   const middleware = assignModule(RootModule);
   assertExists(middleware);
@@ -51,8 +50,8 @@ Deno.test('run assignModule() with modules', () => {
     controllers: [TestController],
     routePrefix: 'test2',
   };
-  Reflect.defineMetadata(MODULE_METADATA, option, RootModule.prototype);
-  Reflect.defineMetadata(MODULE_METADATA, childOption, ChildModule.prototype);
+  defineMetadata(MODULE_METADATA, option, RootModule.prototype);
+  defineMetadata(MODULE_METADATA, childOption, ChildModule.prototype);
 
   const middleware = assignModule(RootModule);
   assertExists(middleware);

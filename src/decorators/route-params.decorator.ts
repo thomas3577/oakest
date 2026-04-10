@@ -1,11 +1,14 @@
+import '../utils/reflect-shim.ts';
+
 import { ROUTE_ARGS_METADATA } from '../const.ts';
 import { RouteParamTypes } from '../enums.ts';
 import { isNil, isString } from '../utils/router.util.ts';
+import { defineMetadata, getMetadata } from '../utils/metadata.util.ts';
 import type { ParamData, RouteArgsMetadata } from '../types.ts';
 
 function createPipesRouteParamDecorator(paramType: RouteParamTypes) {
   return (data?: ParamData): ParameterDecorator => (target, key, index) => {
-    const args: RouteArgsMetadata[] = Reflect.getMetadata(ROUTE_ARGS_METADATA, target, key as string | symbol) || [];
+    const args: RouteArgsMetadata[] = getMetadata(ROUTE_ARGS_METADATA, target, key as string | symbol) || [];
     const hasParamData = isNil(data) || isString(data);
     const paramData = hasParamData ? data : undefined;
 
@@ -15,7 +18,7 @@ function createPipesRouteParamDecorator(paramType: RouteParamTypes) {
       data: paramData,
     });
 
-    Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target, key as string | symbol);
+    defineMetadata(ROUTE_ARGS_METADATA, args, target, key as string | symbol);
   };
 }
 

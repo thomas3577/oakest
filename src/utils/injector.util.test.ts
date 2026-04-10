@@ -1,5 +1,3 @@
-import '@npm/reflect-metadata';
-
 import { assertNotStrictEquals, assertStrictEquals } from '@std/assert';
 
 import { Injectable } from '../decorators/injectable.ts';

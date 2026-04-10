@@ -20,8 +20,7 @@
     "jsr:@std/media-types@1": "1.1.0",
     "jsr:@std/path@1": "1.1.4",
     "npm:@types/node@*": "18.16.19",
-    "npm:path-to-regexp@^6.3.0": "6.3.0",
-    "npm:reflect-metadata@0.2.2": "0.2.2"
+    "npm:path-to-regexp@^6.3.0": "6.3.0"
   },
   "jsr": {
     "@needle-di/core@1.1.2": {
@@ -107,9 +106,6 @@
     },
     "path-to-regexp@6.3.0": {
       "integrity": "sha512-Yhpw4T9C6hPpgPeA28us07OJeqZ5EzQTkbfwuhsUg0c237RomFoETJgmp2sa3F/41gfLE6G5cqcYwznmeEeOlQ=="
-    },
-    "reflect-metadata@0.2.2": {
-      "integrity": "sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q=="
     }
   },
   "workspace": {
@@ -117,8 +113,7 @@
       "jsr:@needle-di/core@1.1.2",
       "jsr:@oak/oak@17.2.0",
       "jsr:@std/assert@1.0.19",
-      "jsr:@std/log@0.224.14",
-      "npm:reflect-metadata@0.2.2"
+      "jsr:@std/log@0.224.14"
     ]
   }
 }
