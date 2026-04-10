@@ -5,29 +5,21 @@ import type { RouterContext } from '@oak/oak';
 import * as log from '@std/log';
 
 import { RouteParamTypes } from '../enums.ts';
-import { CONTROLLER_METADATA, METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
+import { METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
 import type { ActionMetadata, ControllerClass, RouteArgsMetadata } from '../types.ts';
-import { defineMetadata, getMetadata } from '../utils/metadata.util.ts';
+import { getMetadata } from '../utils/metadata.util.ts';
 
 type Next = () => Promise<unknown>;
-
-type ControllerOptions = {
-  path?: string;
-  injectables: Array<string | symbol | null>;
-};
 
 /**
  * Controller decorator
  *
- * @param {string | ControllerOptions} options - Path for the controller
+ * @param {string} options - Path for the controller
  */
-export function Controller<T extends { new (...instance: any[]): object }>(options?: string | ControllerOptions): (fn: T) => any {
-  const path: string | undefined = typeof options === 'string' ? options : options?.path;
-  const injectables: Array<string | symbol | null> = typeof options === 'string' ? [] : options?.injectables || [];
+export function Controller<T extends { new (...instance: any[]): object }>(options?: string): (fn: T) => any {
+  const path: string | undefined = options;
 
   const result = (fn: T) => {
-    defineMetadata(CONTROLLER_METADATA, { injectables }, fn);
-
     return class extends fn implements ControllerClass {
       #path?: string;
       #route?: Router;

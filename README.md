@@ -75,6 +75,129 @@ Run your app and following endpoints will be available:
 - `/api/v1/util/user-agent`
 - `/api/v1/util/multiply?f1=2&f2=4`
 
+## Breaking Changes
+
+The current release includes a breaking DI change.
+
+- `reflect-metadata` is no longer used.
+- `emitDecoratorMetadata` is no longer required.
+- Constructor dependency injection no longer works from parameter types alone.
+- Constructor dependencies must now be declared explicitly with `inject(...)`.
+- `@Controller({ injectables: [...] })` has been removed.
+- The temporary generated DI registry workflow is not part of the final API.
+- `@Injectable({ isSingleton: false })` is no longer supported in the Needle-based DI flow.
+
+If your code relied on implicit constructor injection, update constructors before upgrading.
+
+## Migration
+
+### Constructor Injection
+
+Before:
+
+```typescript
+import { Controller, Get } from '@dx/oakest';
+import { UsersService } from './users.service.ts';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  getAllUsers() {
+    return this.usersService.getAllUsers();
+  }
+}
+```
+
+After:
+
+```typescript
+import { Controller, Get, inject } from '@dx/oakest';
+import { UsersService } from './users.service.ts';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService = inject(UsersService)) {}
+
+  @Get()
+  getAllUsers() {
+    return this.usersService.getAllUsers();
+  }
+}
+```
+
+### Token-Based Injection
+
+Before, token-based controller injection could be modeled indirectly through Oakest-specific metadata. That path has been removed.
+
+After:
+
+```typescript
+import { inject, Injectable } from '@dx/oakest';
+
+const LOGGER = Symbol('LOGGER');
+
+@Injectable({ implementing: LOGGER })
+export class ConsoleLogger {
+  info(message: string) {
+    console.log(message);
+  }
+}
+
+export class UsersService {
+  constructor(private readonly logger = inject<ConsoleLogger>(LOGGER)) {}
+}
+```
+
+### Module Providers
+
+This part does not change: injectable classes still need to be present in the module `providers` array.
+
+```typescript
+@Module({
+  controllers: [UsersController],
+  providers: [UsersService, ConsoleLogger],
+})
+export class UsersModule {}
+```
+
+### Removed Controller Option
+
+Before:
+
+```typescript
+@Controller({
+  path: 'users',
+  injectables: [SOME_TOKEN],
+})
+export class UsersController {}
+```
+
+After:
+
+```typescript
+@Controller('users')
+export class UsersController {}
+```
+
+Move the dependency selection into explicit constructor injection instead of controller metadata.
+
+### Upgrade Guide
+
+If you are upgrading an existing app, use this order:
+
+1. Update every constructor-injected dependency from `constructor(private readonly service: Service)` to `constructor(private readonly service = inject(Service))`.
+2. Keep all injectable classes in the corresponding module `providers` arrays.
+3. Remove any use of `@Controller({ injectables: [...] })` and move that selection logic into explicit constructor injection.
+4. Remove any code or configuration that depended on `reflect-metadata` or emitted constructor metadata.
+
+Typical failure modes after upgrading:
+
+- `No provider(s) found`: the dependency is being requested with `inject(...)`, but the implementation is missing from the module `providers` array.
+- token-based injection does not resolve: the provider is missing `@Injectable({ implementing: TOKEN })`, or the constructor is not using `inject<T>(TOKEN)`.
+- constructor injection silently stopped working after the upgrade: the constructor was not converted to the explicit `inject(...)` style.
+
 ## Docs
 
 ### Modules
@@ -109,7 +232,7 @@ export class AppModule {}
 #### Routing
 
 A controller is a class annotated with a `@Controller()` decorator. Controllers are responsible for handling incoming requests and returning responses to the client.
-The `@Controller()` decorator take a route path prefix optionally.
+The `@Controller()` decorator takes an optional route path prefix.
 
 ```typescript
 import { Controller, Get } from '@dx/oakest';
@@ -163,8 +286,6 @@ Below is a list of the provided decorators.
 
 Providers are responsible for main business logic as services, repositories, factories, helpers, and so on.
 The main idea of a provider is that it can be injected as a dependency. Depending on the environment, different implementations of a service can be provided.
-
-Constructor dependency injection is registry-based. That means classes with constructor parameters must be included in the generated DI registry file that your app imports at startup.
 
 ```typescript
 // ./sample.service.ts
@@ -250,6 +371,7 @@ Notes:
 - Providers still need to be registered in your module's `providers` array.
 - `@Injectable({ implementing: TOKEN })` can still be used to bind string or symbol tokens and resolve them with `inject<T>(TOKEN)`.
 - `isSingleton: false` is no longer supported in this Needle-based mode.
+- `@Controller({ injectables: [...] })` is no longer part of the public API.
 
 ### Custom Middleware Decorators
 
