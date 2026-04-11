@@ -4,11 +4,11 @@
 [![JSR Score](https://jsr.io/badges/@dx/oakest/score)](https://jsr.io/@dx/oakest/score)
 [![ci](https://github.com/thomas3577/oakest/actions/workflows/deno.yml/badge.svg)](https://github.com/thomas3577/oakest/actions/workflows/deno.yml)
 
+> ⚠️ **EXPERIMENTAL**: This library is in early development and highly experimental. APIs may change without notice. Not recommended for production use.
+
 Oakest is a decorator-driven application toolkit for Deno's [oak](https://github.com/oakserver/oak).
 
 It provides controllers, modules, explicit dependency injection, middleware decorators, and route argument resolvers in a small API surface built around standard decorators.
-
-Current status: `0.1.0-alpha.1`
 
 The current API uses standard decorators, explicit dependency injection via `inject(...)`, and route argument resolvers on `@Get/@Post/...`.
 
