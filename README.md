@@ -17,8 +17,6 @@ NestJS-style decorators library for Deno's [oak](https://github.com/oakserver/oa
 - **Custom Middleware Support**: Create middleware decorators to control access and flow to routes
 - **Route Argument Resolvers**: Map params, body, query, headers, request, response, or custom values directly on route decorators
 
-For more info [check this issue](https://github.com/denoland/deno/issues/15197)
-
 ## Usage
 
 Define controllers to handle HTTP endpoints
@@ -46,7 +44,7 @@ Define modules
 ```typescript
 // ./app.module.ts
 import { Module } from '@dx/oakest';
-import { UtilController } from './app.controller.ts';
+import { UtilController } from './controllers/util-controller.ts';
 
 @Module({
   controllers: [UtilController],
@@ -70,7 +68,7 @@ app.use(assignModule(AppModule));
 await app.listen({ port: 8000 });
 ```
 
-Run your app and following endpoints will be available:
+Run your app and the following endpoints will be available:
 
 - `/api/v1/util/user-agent`
 - `/api/v1/util/multiply?f1=2&f2=4`
@@ -84,7 +82,6 @@ The current release includes breaking changes in DI and route argument handling.
 - Constructor dependency injection no longer works from parameter types alone.
 - Constructor dependencies must now be declared explicitly with `inject(...)`.
 - `@Controller({ injectables: [...] })` has been removed.
-- The temporary generated DI registry workflow is not part of the final API.
 - `@Injectable({ isSingleton: false })` is no longer supported in the Needle-based DI flow.
 - Parameter decorators like `@Body()`, `@Param()`, `@Query()`, `@Headers()`, `@Req()`, and `@Ctx()` have been removed.
 - Route handler inputs must now be declared on `@Get/@Post/...` via resolver arrays like `@Post(':id', [param('id'), body()])`.
@@ -218,7 +215,7 @@ The `@Module()` decorator takes those options:
 | `controllers` | the set of controllers defined in this module which have to be instantiated |
 | `providers`   | the providers that will be instantiated by the injector                     |
 | `modules`     | the set of modules defined as child modules of this module                  |
-| `routePrefix` | the prefix name to be set in route as the common ULR for controllers.       |
+| `routePrefix` | the prefix name to be set in route as the common URL for controllers.       |
 
 ```typescript
 import { Module } from '@dx/oakest';
@@ -274,18 +271,18 @@ export class SampleController {
 
 Available resolvers:
 
-| name                     | result                                            |
-| :----------------------- | :------------------------------------------------ |
-| `req(key?)`              | `context.request` or a request property           |
-| `res(key?)`              | `context.response` or a response property         |
-| `next()`                 | Oak `next` handler                                |
-| `query(key?)`            | `URLSearchParams` or a single query value         |
-| `param(key?)`            | route params object or a single route param       |
-| `body(key?)`             | parsed JSON body or a single body property        |
-| `headers(name?)`         | all headers as an object or a single header value |
-| `ip()`                   | client IP                                         |
-| `ctx()`                  | full Oak router context                           |
-| `custom(handler, data?)` | custom async/sync value resolver                  |
+| name                     | result                                                                |
+| :----------------------- | :-------------------------------------------------------------------- |
+| `req()`                  | `context.request`                                                     |
+| `res()`                  | `context.response`                                                    |
+| `next()`                 | Oak `next` handler                                                    |
+| `query(key?)`            | `URLSearchParams` or a single query value                             |
+| `param(key?)`            | route params object or a single route param                           |
+| `body(key?)`             | parsed JSON body or a single body property                            |
+| `headers(name?)`         | all headers as an object or a single header value                     |
+| `ip()`                   | client IP                                                             |
+| `ctx()`                  | full Oak router context                                               |
+| `custom(handler, data?)` | custom async/sync value resolver, typed from the handler return value |
 
 If the handler declares exactly one parameter and no resolver array, Oakest still injects `ctx` automatically.
 
@@ -304,7 +301,7 @@ import db from './db-service.ts';
 @Injectable()
 export class UserService {
   async getAllUsers() {
-    const { error, data: users } = await db.users.getAll();
+    const { data: users } = await db.users.getAll();
     return { status: 'ok', data: users };
   }
 }
@@ -336,7 +333,7 @@ export class UsersController {
 
   @Get()
   getAllUsers() {
-    return await this.userService.getAllUsers();
+    return this.userService.getAllUsers();
   }
 }
 
@@ -392,7 +389,7 @@ For instance, to protect routes based on user roles, you can create a `@Requires
 ```typescript
 // ./middleware.ts
 import { registerMiddlewareMethodDecorator } from '@dx/oakest';
-import { Context } from '@oak/oak';
+import type { Context } from '@oak/oak';
 
 function checkUserRoles(context: Context, roles: string[]) {
   // Logic to check the user role
@@ -417,14 +414,15 @@ export function RequiresRole(roles: string[]) {
 }
 ```
 
-Then you can use the `@RequiresRole` decorator in your controllers's methods.
+Then you can use the `@RequiresRole` decorator in your controllers' methods.
 
 ```typescript
 // ./sample.controller.ts
-import RequireRole from './middleware.ts';
+import { Controller, Get } from '@dx/oakest';
+import { RequiresRole } from './middleware.ts';
 
 @Controller('users')
-export default class SampleController {
+export class SampleController {
   @Get('/')
   @RequiresRole(['admin'])
   getAllUsers() {
@@ -437,7 +435,7 @@ If you already had custom middleware decorators in your codebase, the required m
 
 ### Custom route argument resolvers
 
-Custom route inputs can be declared inline with `custom(...)`.
+Custom route inputs can be declared inline with `custom(...)`. The resolver type is inferred from the handler return value.
 
 ```typescript
 import { Controller, custom, Get } from '@dx/oakest';
