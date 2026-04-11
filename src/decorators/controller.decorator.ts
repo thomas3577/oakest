@@ -106,7 +106,19 @@ async function resolveHandlerInputs(
   next: Next,
 ): Promise<unknown[]> {
   if (routeArgs && routeArgs.length > 0) {
-    const inputs = await Promise.all(routeArgs.map(async (data) => await getContextData(data, context, next)));
+    let cachedBody: unknown | undefined = undefined;
+    let bodyParsed = false;
+
+    const inputs = await Promise.all(routeArgs.map(async (data) => {
+      if (data.paramType === RouteParamTypes.BODY) {
+        if (!bodyParsed) {
+          cachedBody = await context.request.body.json();
+          bodyParsed = true;
+        }
+        return data.data ? (cachedBody as Record<string, unknown>)[data.data.toString()] : cachedBody;
+      }
+      return await getContextData(data, context, next);
+    }));
     const parameterCount = handler.length;
 
     if (parameterCount === inputs.length) {

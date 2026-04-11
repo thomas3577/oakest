@@ -4,12 +4,14 @@ type MetadataPropertyKey = string | symbol;
 type DecoratorMetadataBag = Record<PropertyKey, unknown>;
 type StandardMetadataStore = {
   classMetadata: Map<MetadataKey, unknown>;
-  memberMetadata: Map<MetadataPropertyKey, Map<MetadataKey, unknown>>;
+  instanceMemberMetadata: Map<MetadataPropertyKey, Map<MetadataKey, unknown>>;
+  staticMemberMetadata: Map<MetadataPropertyKey, Map<MetadataKey, unknown>>;
 };
 type StandardMetadataDecoratorContext = {
   kind: string;
   name?: string | symbol;
   private?: boolean;
+  static?: boolean;
   metadata: DecoratorMetadataBag;
 };
 
@@ -68,7 +70,8 @@ const getOrCreateStandardMetadataStore = (metadata: DecoratorMetadataBag): Stand
   if (!store) {
     store = {
       classMetadata: new Map<MetadataKey, unknown>(),
-      memberMetadata: new Map<MetadataPropertyKey, Map<MetadataKey, unknown>>(),
+      instanceMemberMetadata: new Map<MetadataPropertyKey, Map<MetadataKey, unknown>>(),
+      staticMemberMetadata: new Map<MetadataPropertyKey, Map<MetadataKey, unknown>>(),
     };
     metadata[standardMetadataStoreKey] = store;
   }
@@ -103,7 +106,14 @@ const getStandardMetadataValue = <T>(metadataKey: MetadataKey, target: MetadataT
     return store.classMetadata.get(metadataKey) as T | undefined;
   }
 
-  return store.memberMetadata.get(propertyKey)?.get(metadataKey) as T | undefined;
+  // For backwards compatibility, check instance members first, then static members
+  // This maintains the previous behavior where both were in one map
+  const instanceValue = store.instanceMemberMetadata.get(propertyKey)?.get(metadataKey) as T | undefined;
+  if (instanceValue !== undefined) {
+    return instanceValue;
+  }
+
+  return store.staticMemberMetadata.get(propertyKey)?.get(metadataKey) as T | undefined;
 };
 
 export const defineMetadata = <T>(metadataKey: MetadataKey, value: T, target: MetadataTarget, propertyKey?: MetadataPropertyKey): void => {
@@ -152,11 +162,12 @@ export const createMetadataDecorator = (metadataKey: MetadataKey, value: unknown
         throw new Error('Reflect.metadata() only supports public class elements when used as a standard decorator.');
       }
 
-      let memberMetadata = metadata.memberMetadata.get(context.name);
+      const memberMap = context.static ? metadata.staticMemberMetadata : metadata.instanceMemberMetadata;
+      let memberMetadata = memberMap.get(context.name);
 
       if (!memberMetadata) {
         memberMetadata = new Map<MetadataKey, unknown>();
-        metadata.memberMetadata.set(context.name, memberMetadata);
+        memberMap.set(context.name, memberMetadata);
       }
 
       memberMetadata.set(metadataKey, value);
