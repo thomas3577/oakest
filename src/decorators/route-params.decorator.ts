@@ -7,17 +7,16 @@ import type { ParamData, TypedRouteArgResolver } from '../types.ts';
 type Next = () => Promise<unknown>;
 
 // Type mapping from RouteParamTypes to their concrete return types
-export type RouteParamReturn<TParam extends RouteParamTypes> =
-  TParam extends RouteParamTypes.REQUEST ? Request :
-  TParam extends RouteParamTypes.CONTEXT ? RouterContext<string> :
-  TParam extends RouteParamTypes.RESPONSE ? Response :
-  TParam extends RouteParamTypes.NEXT ? Next :
-  TParam extends RouteParamTypes.BODY ? unknown :
-  TParam extends RouteParamTypes.QUERY ? string | URLSearchParams :
-  TParam extends RouteParamTypes.PARAM ? string | Record<string, string> :
-  TParam extends RouteParamTypes.HEADERS ? string | undefined | Record<string, string> :
-  TParam extends RouteParamTypes.IP ? string :
-  unknown;
+export type RouteParamReturn<TParam extends RouteParamTypes> = TParam extends RouteParamTypes.REQUEST ? Request
+  : TParam extends RouteParamTypes.CONTEXT ? RouterContext<string>
+  : TParam extends RouteParamTypes.RESPONSE ? Response
+  : TParam extends RouteParamTypes.NEXT ? Next
+  : TParam extends RouteParamTypes.BODY ? unknown
+  : TParam extends RouteParamTypes.QUERY ? string | URLSearchParams
+  : TParam extends RouteParamTypes.PARAM ? string | Record<string, string>
+  : TParam extends RouteParamTypes.HEADERS ? string | undefined | Record<string, string>
+  : TParam extends RouteParamTypes.IP ? string
+  : unknown;
 
 export type RouteArgResolverFactory = <T = unknown>(data?: ParamData) => TypedRouteArgResolver<T>;
 
