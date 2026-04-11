@@ -33,7 +33,7 @@ Deno.test('custom() creates a custom resolver', () => {
 
 Deno.test('custom() binds resolver typing to the handler return type', () => {
   const syncResolver: TypedRouteArgResolver<string> = custom(() => 'ok');
-  const asyncResolver: TypedRouteArgResolver<number> = custom(async () => 42);
+  const asyncResolver: TypedRouteArgResolver<number> = custom(() => Promise.resolve(42));
 
   assertEquals(syncResolver.paramType, RouteParamTypes.CUSTOM);
   assertEquals(asyncResolver.paramType, RouteParamTypes.CUSTOM);
