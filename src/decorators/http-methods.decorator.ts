@@ -1,5 +1,13 @@
+import '../utils/reflect-shim.ts';
+
 import { METHOD_METADATA } from '../const.ts';
-import type { ActionMetadata, HTTPMethods } from '../types.ts';
+import type { ActionMetadata, HTTPMethods, RouteArgResolver } from '../types.ts';
+
+type DecoratorMetadataBag = Record<PropertyKey, unknown>;
+type RouteMethodDecorator = <This, Args extends unknown[], Return>(
+  value: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+) => void;
 
 /**
  * HTTP Method GET
@@ -46,27 +54,44 @@ export const All: HttpMethod = mappingMethod('all');
 /**
  * HTTP Method
  */
-export type HttpMethod = (path?: string) => (target: object, functionName: string, _: PropertyDescriptor) => void;
+export type HttpMethod = {
+  (path?: string, args?: RouteArgResolver[]): RouteMethodDecorator;
+  (args: RouteArgResolver[]): RouteMethodDecorator;
+};
 
 function mappingMethod(method: HTTPMethods): HttpMethod {
-  return (path = '') => (target: object, functionName: string, _: PropertyDescriptor) => {
+  return (pathOrArgs: string | RouteArgResolver[] = '', args?: RouteArgResolver[]) =>
+  <This, Args extends unknown[], Return>(
+    _value: (this: This, ...args: Args) => Return,
+    context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+  ) => {
+    if (context.kind !== 'method' || context.static || context.private) {
+      throw new Error(`@${method.toUpperCase()}() can only be used on public instance methods.`);
+    }
+
+    if (typeof context.name !== 'string') {
+      throw new Error(`@${method.toUpperCase()}() only supports string-named methods.`);
+    }
+
+    const path = Array.isArray(pathOrArgs) ? '' : pathOrArgs;
+    const routeArgs = Array.isArray(pathOrArgs) ? pathOrArgs : args;
     const meta: ActionMetadata = {
       path,
       method,
-      functionName,
+      functionName: context.name,
     };
 
-    addMetadata(meta, target, METHOD_METADATA);
+    if (routeArgs) {
+      meta.args = routeArgs;
+    }
+
+    addMetadata(meta, context.metadata as DecoratorMetadataBag, METHOD_METADATA);
   };
 }
 
-function addMetadata<T>(value: T, target: object, key: symbol): void {
-  const list = Reflect.getMetadata(key, target);
-  if (list) {
-    list.push(value);
+function addMetadata<T>(value: T, metadata: DecoratorMetadataBag, key: symbol): void {
+  const list = (metadata[key] as T[] | undefined) ?? [];
 
-    return;
-  }
-
-  Reflect.defineMetadata(key, [value], target);
+  list.push(value);
+  metadata[key] = list;
 }

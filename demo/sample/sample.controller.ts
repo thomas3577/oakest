@@ -1,5 +1,5 @@
-// deno-lint-ignore-file verbatim-module-syntax
-import { Body, Controller, Get, IP, Param, Post, Query } from '../../mod.ts';
+import { body, Controller, Get, inject, param, Post, query } from '../../mod.ts';
+import type { RouterContext } from '@oak/oak';
 
 import { SharedService } from '../shared/shared.service.ts';
 import { SampleService } from './sample.service.ts';
@@ -7,8 +7,8 @@ import { SampleService } from './sample.service.ts';
 @Controller()
 export class SampleController {
   constructor(
-    private readonly _sampleService: SampleService,
-    private readonly _sharedService: SharedService,
+    private readonly _sampleService = inject(SampleService),
+    private readonly _sharedService = inject(SharedService),
   ) {}
 
   @Get()
@@ -16,14 +16,14 @@ export class SampleController {
     return this._sampleService.get();
   }
 
-  @Post()
-  post(@Body() body: any) {
+  @Post([body<Record<string, unknown>>()])
+  post(body: Record<string, unknown>) {
     return body;
   }
 
-  @Get('test/:id')
-  test(@Param('id') id: string, @Query() test: any, @IP() ip: string) {
-    return { id, ...test, ip };
+  @Get('test/:id', [param<string>('id'), query<URLSearchParams>()])
+  test(id: string, test: URLSearchParams, ctx: RouterContext<string>) {
+    return { id, ...Object.fromEntries(test), ip: ctx.request.ip };
   }
 
   @Get('shared')

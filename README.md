@@ -1,42 +1,45 @@
-# Oak Decorators
+# Oakest
 
 [![JSR Version](https://jsr.io/badges/@dx/oakest)](https://jsr.io/@dx/oakest)
 [![JSR Score](https://jsr.io/badges/@dx/oakest/score)](https://jsr.io/@dx/oakest/score)
 [![ci](https://github.com/thomas3577/oakest/actions/workflows/deno.yml/badge.svg)](https://github.com/thomas3577/oakest/actions/workflows/deno.yml)
 
-**This is a fork of** [biga816/oak-decorators](https://github.com/biga816/oak-decorators)
+Oakest is a decorator-driven application toolkit for Deno's [oak](https://github.com/oakserver/oak).
 
-NestJS-style decorators library for Deno's [oak](https://github.com/oakserver/oak).
+It provides controllers, modules, explicit dependency injection, middleware decorators, and route argument resolvers in a small API surface built around standard decorators.
 
-## TL;DR Key features
+Current status: `0.1.0-alpha.1`
 
-- **Dependency Injection**: Simplify your code and testing process by injecting dependencies.
-- **Modular Structure**: Organize your code into modules for better scalability and maintainability.
-- **Decorators**: Configure route endpoint methods in a declarative style.
-- **Controller Support**: Define your routes in a declarative way using controllers.
-- **Custom Middleware Support**: Create middleware decorators to control access and flow to routes
-- **Custom Middleware Params Support**: Create endpoint parameters decorators for parameter injection
+The current API uses standard decorators, explicit dependency injection via `inject(...)`, and route argument resolvers on `@Get/@Post/...`.
 
-For more info [check this issue](https://github.com/denoland/deno/issues/15197)
+Project background: Oakest was originally based on [biga816/oak-decorators](https://github.com/biga816/oak-decorators).
 
-## Usage
+## Highlights
+
+- **Controllers and Modules**: Organize Oak routes in a clear application structure.
+- **Explicit Dependency Injection**: Declare dependencies with `inject(...)` instead of emitted type metadata.
+- **Standard Decorators**: Build on the current TC39 decorator model instead of legacy experimental decorators.
+- **Middleware Decorators**: Attach reusable request guards and flow control directly to route methods.
+- **Route Argument Resolvers**: Map params, body, query, headers, request, response, context, or custom values directly on route decorators.
+
+## Quick Start
 
 Define controllers to handle HTTP endpoints
 
 ```typescript
 // ./controllers/util-controller.ts
-import { Controller, Get, Headers } from '@dx/oakest';
+import { Controller, Get, headers, query } from '@dx/oakest';
 
 @Controller('util')
 export class UtilController {
-  @Get('user-agent')
-  bounceUserAgent(@Headers('user-agent') userAgent: string) {
+  @Get('user-agent', [headers<string>('user-agent')])
+  bounceUserAgent(userAgent: string) {
     return { status: 'ok', userAgent };
   }
 
-  @Get('multiply')
-  getRandomStuff(@Query('f1') factor1: number, @Query('f2') factor2: number) {
-    return { status: 'ok', result: factor1 * factor2 };
+  @Get('multiply', [query<string>('f1'), query<string>('f2')])
+  getRandomStuff(factor1: string, factor2: string) {
+    return { status: 'ok', result: Number(factor1) * Number(factor2) };
   }
 }
 ```
@@ -46,7 +49,7 @@ Define modules
 ```typescript
 // ./app.module.ts
 import { Module } from '@dx/oakest';
-import { UtilController } from './app.controller.ts';
+import { UtilController } from './controllers/util-controller.ts';
 
 @Module({
   controllers: [UtilController],
@@ -70,12 +73,72 @@ app.use(assignModule(AppModule));
 await app.listen({ port: 8000 });
 ```
 
-Run your app and following endpoints will be available:
+Run your app and the following endpoints will be available:
 
 - `/api/v1/util/user-agent`
 - `/api/v1/util/multiply?f1=2&f2=4`
 
-## Docs
+## Upgrade Notes
+
+If you are upgrading from older Oakest releases, these are the important changes:
+
+- `reflect-metadata` is no longer used.
+- `emitDecoratorMetadata` is no longer required.
+- Constructor dependencies must now be declared explicitly with `inject(...)`.
+- `@Controller({ injectables: [...] })` has been removed.
+- `@Injectable({ isSingleton: false })` is no longer supported in the current Needle-based DI flow.
+- Parameter decorators like `@Body()`, `@Param()`, `@Query()`, `@Headers()`, `@Req()`, and `@Ctx()` have been removed.
+- Route inputs now belong on `@Get/@Post/...` via resolver arrays like `@Post(':id', [param('id'), body()])`.
+- Custom middleware decorators must use the standard decorator context form `(_value, context)`.
+- `experimentalDecorators` is no longer needed in `deno.json`.
+
+Migration checklist:
+
+1. Replace implicit constructor injection with `inject(...)` default values.
+2. Keep all injectable implementations in the corresponding module `providers` arrays.
+3. Remove `@Controller({ injectables: [...] })` and move token selection into explicit constructor injection.
+4. Replace parameter decorators with route argument resolvers on `@Get/@Post/...`.
+5. Remove code or config that depended on `reflect-metadata` or emitted constructor metadata.
+6. Migrate custom middleware decorators from `(target, methodName)` to `(_value, context)` and call `registerMiddlewareMethodDecorator(context, handler)`.
+
+Constructor migration example:
+
+```typescript
+import { Controller, Get, inject } from '@dx/oakest';
+import { UsersService } from './users.service.ts';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService = inject(UsersService)) {}
+
+  @Get()
+  getAllUsers() {
+    return this.usersService.getAllUsers();
+  }
+}
+```
+
+Route argument migration example:
+
+```typescript
+import { Controller, Get, param, query } from '@dx/oakest';
+
+@Controller('users')
+export class UsersController {
+  @Get(':id', [param<string>('id'), query<string | null>('expand')])
+  findOne(id: string, expand: string | null) {
+    return { id, expand };
+  }
+}
+```
+
+Common upgrade failures:
+
+- `No provider(s) found`: the dependency is requested with `inject(...)`, but the implementation is missing from the module `providers` array.
+- Token-based injection does not resolve: the provider is missing `@Injectable({ implementing: TOKEN })`, or the constructor is not using `inject<T>(TOKEN)`.
+- Constructor injection silently stopped working after the upgrade: the constructor was not converted to explicit `inject(...)` style.
+
+## API Overview
 
 ### Modules
 
@@ -89,7 +152,7 @@ The `@Module()` decorator takes those options:
 | `controllers` | the set of controllers defined in this module which have to be instantiated |
 | `providers`   | the providers that will be instantiated by the injector                     |
 | `modules`     | the set of modules defined as child modules of this module                  |
-| `routePrefix` | the prefix name to be set in route as the common ULR for controllers.       |
+| `routePrefix` | the prefix name to be set in route as the common URL for controllers.       |
 
 ```typescript
 import { Module } from '@dx/oakest';
@@ -109,7 +172,7 @@ export class AppModule {}
 #### Routing
 
 A controller is a class annotated with a `@Controller()` decorator. Controllers are responsible for handling incoming requests and returning responses to the client.
-The `@Controller()` decorator take a route path prefix optionally.
+The `@Controller()` decorator takes an optional route path prefix.
 
 ```typescript
 import { Controller, Get } from '@dx/oakest';
@@ -127,37 +190,40 @@ The `@Get()` HTTP request method decorator before the `findAll()` method tells t
 
 For http methods, you can use `@Get()`, `@Post()`, `@Put()`, `@Patch()`, `@Delete()`, `@All()`.
 
-#### Request object
+#### Route arguments
 
-Handlers often need access to the client request details.
-HHere's a example to access the request object using `@Req()` decorator.
+Handlers can map request-derived values directly on the HTTP method decorator.
 
 ```typescript
-import { Controller, Get, Request } from '@dx/oakest';
+import { Controller, Get, headers, param, query } from '@dx/oakest';
 
 @Controller('sample')
 export class SampleController {
-  @Get()
-  findAll(@Request() request: Request): string {
-    return 'OK';
+  @Get(':id', [param<string>('id'), query<string | null>('dryRun'), headers<string>('user-agent')])
+  findOne(id: string, dryRun: string | null, userAgent: string) {
+    return { id, dryRun, userAgent };
   }
 }
 ```
 
-Below is a list of the provided decorators.
+Available resolvers:
 
-| name |
-| :--- |
+| name                     | result                                                                |
+| :----------------------- | :-------------------------------------------------------------------- |
+| `req()`                  | `context.request`                                                     |
+| `res()`                  | `context.response`                                                    |
+| `next()`                 | Oak `next` handler                                                    |
+| `query(key?)`            | `URLSearchParams` or a single query value                             |
+| `param(key?)`            | route params object or a single route param                           |
+| `body(key?)`             | parsed JSON body or a single body property                            |
+| `headers(name?)`         | all headers as an object or a single header value                     |
+| `ip()`                   | client IP                                                             |
+| `ctx()`                  | full Oak router context                                               |
+| `custom(handler, data?)` | custom async/sync value resolver, typed from the handler return value |
 
-| `@Request()`
-| `@Response()`
-| `@Next()`
-| `@Query(key?: string)`
-| `@Param(key?: string)`
-| `@Body(key?: string)`
-| `@Headers(name?: string)`
-| `@Ip()`
-| `@Context()`
+If the handler declares exactly one parameter and no resolver array, Oakest still injects `ctx` automatically.
+
+If the handler uses a resolver array and declares exactly one extra trailing parameter, that final parameter receives `ctx` automatically.
 
 ### Providers
 
@@ -172,7 +238,7 @@ import db from './db-service.ts';
 @Injectable()
 export class UserService {
   async getAllUsers() {
-    const { error, data: users } = await db.users.getAll();
+    const { data: users } = await db.users.getAll();
     return { status: 'ok', data: users };
   }
 }
@@ -195,16 +261,16 @@ export class MockUserService {
 }
 
 // ./sample.controller.ts
-import { Controller, Get } from '@dx/oakest';
+import { Controller, Get, inject } from '@dx/oakest';
 import { UserService } from './sample.service.ts';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService = inject(UserService)) {}
 
   @Get()
   getAllUsers() {
-    return await this.userService.getAllUsers();
+    return this.userService.getAllUsers();
   }
 }
 
@@ -222,6 +288,15 @@ import { MockUserService, UserService } from './sample.service.ts';
 export class SampleModule {}
 ```
 
+Dependency injection notes:
+
+- Dependencies must be requested explicitly in constructor default values.
+- Providers still need to be registered in your module's `providers` array.
+- `@Injectable({ implementing: TOKEN })` can still be used to bind string or symbol tokens and resolve them with `inject<T>(TOKEN)`.
+- `isSingleton: false` is no longer supported in this Needle-based mode.
+- `@Controller({ injectables: [...] })` is no longer part of the public API.
+- `experimentalDecorators` is no longer needed in `deno.json`.
+
 ### Custom Middleware Decorators
 
 It's possible to register middleware that can be used in controllers by means of decorators.
@@ -231,7 +306,7 @@ For instance, to protect routes based on user roles, you can create a `@Requires
 ```typescript
 // ./middleware.ts
 import { registerMiddlewareMethodDecorator } from '@dx/oakest';
-import { Context } from '@oak/oak';
+import type { Context } from '@oak/oak';
 
 function checkUserRoles(context: Context, roles: string[]) {
   // Logic to check the user role
@@ -239,7 +314,7 @@ function checkUserRoles(context: Context, roles: string[]) {
 }
 
 export function RequiresRole(roles: string[]) {
-  return function (target, methodName) {
+  return function (_value, context) {
     const requiresRole = async (context, next) => {
       // Logic to check the user session or JWT for the required role
       if (checkUserRoles(context, roles)) {
@@ -251,19 +326,20 @@ export function RequiresRole(roles: string[]) {
         return;
       }
     };
-    registerMiddlewareMethodDecorator(target, methodName, requiresRole);
+    registerMiddlewareMethodDecorator(context, requiresRole);
   };
 }
 ```
 
-Then you can use the `@RequiresRole` decorator in your controllers's methods.
+Then you can use the `@RequiresRole` decorator in your controllers' methods.
 
 ```typescript
 // ./sample.controller.ts
-import RequireRole from './middleware.ts';
+import { Controller, Get } from '@dx/oakest';
+import { RequiresRole } from './middleware.ts';
 
 @Controller('users')
-export default class SampleController {
+export class SampleController {
   @Get('/')
   @RequiresRole(['admin'])
   getAllUsers() {
@@ -272,60 +348,36 @@ export default class SampleController {
 }
 ```
 
-### Custom endpoint parameters decorator
+If you already had custom middleware decorators in your codebase, the required migration is just the decorator signature change from `(target, methodName)` to `(_value, context)`.
 
-It's also possible to register custom parameters decorators to streamline data injection into endpoint handlers
+### Custom route argument resolvers
 
-It would be useful to have a shortcut to some data stored in the request's JWT.
-
-The approach would involve having a high priority controller that parses the JWT and stores it in `context.state.jwtData`.
-
-Then a param decorator could be defined as follows:
+Custom route inputs can be declared inline with `custom(...)`. The resolver type is inferred from the handler return value.
 
 ```typescript
-export function JWT(propName?: string) {
-  return function (targetClass: any, methodName: string, paramIndex: number) {
-    const handler = (ctx: Context) => propName ? ctx.state.jwtData?.[propName] : ctx.state.jwtData;
-    registerCustomRouteParamDecorator(
-      targetClass,
-      methodName,
-      paramIndex,
-    )(handler);
-  };
+import { Controller, custom, Get } from '@dx/oakest';
+
+@Controller('users')
+export class UsersController {
+  @Get('me', [custom((ctx) => ctx.state.jwtData?.sub)])
+  getCurrentUser(userId: string | undefined) {
+    return { userId };
+  }
 }
 ```
 
-And used in controllers like this:
+Resolvers can be asynchronous too:
 
 ```typescript
-// sample-controller
+import { Controller, custom, Get } from '@dx/oakest';
 
-@Get('my-subscriptions')
-getUserSubscriptions(@JWT('sub') userId : string) {
-  return await databaseService.getUserSubscriptions(userId);
-}
-```
-
-Params resolution is asynchronous, so it is also possible to do things like retrieving session information from KV stores on demand. This would be a more efficient strategy than having a middleware that always retrieves session data if this is not desirable.
-
-```typescript
-export function SessionData() {
-  return function (targetClass: any, methodName: string, paramIndex: number) {
-    const handler = (ctx: Context) => ctx.state.jwtData?.sid ? await retrieveSession(ctx.state.jwtData?.sid) : null;
-    registerCustomRouteParamDecorator(
-      targetClass,
-      methodName,
-      paramIndex,
-    )(handler);
-  };
-}
-```
-
-```typescript
-// sample-controller
-
-@Get('my-recent-products')
-getUserSubscriptions(@SessionData() sessionData : any) {
-  return sessionData.recentProducts
+@Controller('products')
+export class ProductsController {
+  @Get('recent', [custom(async (ctx) => {
+    return ctx.state.jwtData?.sid ? await retrieveSession(ctx.state.jwtData.sid) : null;
+  })])
+  getRecentProducts(sessionData: { recentProducts: unknown[] } | null) {
+    return sessionData?.recentProducts ?? [];
+  }
 }
 ```

@@ -1,31 +1,48 @@
+import '../utils/reflect-shim.ts';
+
 import { Router } from '@oak/oak';
 import type { RouterContext } from '@oak/oak';
 import * as log from '@std/log';
 
 import { RouteParamTypes } from '../enums.ts';
-import { CONTROLLER_METADATA, METHOD_METADATA, MIDDLEWARE_METADATA, ROUTE_ARGS_METADATA } from '../const.ts';
-import type { ActionMetadata, ControllerClass, RouteArgsMetadata } from '../types.ts';
+import { METHOD_METADATA, MIDDLEWARE_METADATA } from '../const.ts';
+import type { ActionMetadata, ControllerClass, HTTPMethods, RouteArgResolver } from '../types.ts';
+import { defineMetadata, getMetadata, getOwnMetadata } from '../utils/metadata.util.ts';
 
 type Next = () => Promise<unknown>;
-
-type ControllerOptions = {
-  path?: string;
-  injectables: Array<string | symbol | null>;
-};
+type ControllerConstructor = new (...instance: never[]) => object;
+type RouterMethodInvoker = Router & Record<HTTPMethods, (path: string, ...handlers: unknown[]) => Router>;
+type ControllerMethodMap = Record<string, (...args: unknown[]) => unknown>;
+type MiddlewareHandler = (ctx: RouterContext<string>, next: Next) => void | Promise<void>;
+type DecoratorMetadataBag = Record<PropertyKey, unknown>;
+type MiddlewareRegistration = { functionName: string; handler: MiddlewareHandler };
 
 /**
  * Controller decorator
  *
- * @param {string | ControllerOptions} options - Path for the controller
+ * @param {string} options - Path for the controller
  */
-export function Controller<T extends { new (...instance: any[]): object }>(options?: string | ControllerOptions): (fn: T) => any {
-  const path: string | undefined = typeof options === 'string' ? options : options?.path;
-  const injectables: Array<string | symbol | null> = typeof options === 'string' ? [] : options?.injectables || [];
+export function Controller<T extends ControllerConstructor>(options?: string): (fn: T, context: ClassDecoratorContext<T>) => T {
+  const path: string | undefined = options;
 
-  const result = (fn: T) => {
-    Reflect.defineMetadata(CONTROLLER_METADATA, { injectables }, fn);
+  const result = (fn: T, context: ClassDecoratorContext<T>) => {
+    const metadata = context.metadata as DecoratorMetadataBag;
+    const actions = [...((metadata[METHOD_METADATA] as ActionMetadata[] | undefined) ?? [])];
+    const middlewareRegistrations = (metadata[MIDDLEWARE_METADATA] as MiddlewareRegistration[] | undefined) ?? [];
 
-    return class extends fn implements ControllerClass {
+    if (actions.length > 0) {
+      defineMetadata(METHOD_METADATA, actions, fn.prototype);
+    }
+
+    for (const registration of middlewareRegistrations) {
+      const currentHandlers = getOwnMetadata<MiddlewareHandler[]>(MIDDLEWARE_METADATA, fn.prototype, registration.functionName) ?? [];
+      const handlers = [...currentHandlers, registration.handler];
+      defineMetadata(MIDDLEWARE_METADATA, handlers, fn.prototype, registration.functionName);
+    }
+
+    const BaseController = fn as ControllerConstructor;
+
+    return class extends BaseController implements ControllerClass {
       #path?: string;
       #route?: Router;
 
@@ -35,21 +52,18 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
         this.#path = prefix + (path ? `/${path}` : '');
 
         const route = new Router();
-        const list: ActionMetadata[] = Reflect.getMetadata(METHOD_METADATA, fn.prototype) || [];
+        const list: ActionMetadata[] = getMetadata(METHOD_METADATA, fn.prototype) || [];
 
         list.forEach((meta: ActionMetadata) => {
-          const argsMetadataList: RouteArgsMetadata[] = Reflect.getMetadata(ROUTE_ARGS_METADATA, fn.prototype, meta.functionName) || [];
-          const middlewaresMetadata = Reflect.getMetadata(MIDDLEWARE_METADATA, fn.prototype, meta.functionName);
+          const method = (fn.prototype as ControllerMethodMap)[meta.functionName];
+          const middlewaresMetadata = getMetadata(MIDDLEWARE_METADATA, fn.prototype, meta.functionName) ?? getMetadata(MIDDLEWARE_METADATA, method);
           const middlewares = Array.isArray(middlewaresMetadata) ? middlewaresMetadata : middlewaresMetadata ? [middlewaresMetadata] : [];
 
-          (route as any)[meta.method](`/${meta.path}`, ...middlewares, async (context: RouterContext<string>, next: Next) => {
-            const inputs = await Promise.all(
-              argsMetadataList
-                .sort((a, b) => a.index - b.index)
-                .map(async (data) => await getContextData(data, context, next)),
-            );
+          (route as RouterMethodInvoker)[meta.method](`/${meta.path}`, ...middlewares, async (context: RouterContext<string>, next: Next) => {
+            const handler = (this as unknown as ControllerMethodMap)[meta.functionName];
+            const inputs = await resolveHandlerInputs(handler, meta.args, context, next);
 
-            const result = await (this as any)[meta.functionName](...inputs);
+            const result = await handler.apply(this, inputs);
             if (result === undefined) return;
 
             if (context.response.writable) {
@@ -72,7 +86,7 @@ export function Controller<T extends { new (...instance: any[]): object }>(optio
       get route(): Router | undefined {
         return this.#route;
       }
-    };
+    } as unknown as T;
   };
 
   return result;
@@ -85,19 +99,51 @@ function logMapping(meta: ActionMetadata, path?: string): void {
   log.info(`${methodName} ${fullPath}`);
 }
 
-type TContextData =
-  | RouterContext<string, Record<string, any>, Record<string, any>>
-  | Request
-  | Response
-  | Next
-  | URLSearchParams
-  | Record<string, any>
-  | URLSearchParams
-  | string
-  | null
-  | undefined;
+async function resolveHandlerInputs(
+  handler: (...args: unknown[]) => unknown,
+  routeArgs: RouteArgResolver[] | undefined,
+  context: RouterContext<string>,
+  next: Next,
+): Promise<unknown[]> {
+  if (routeArgs && routeArgs.length > 0) {
+    let cachedBody: unknown | undefined = undefined;
+    let bodyParsed = false;
 
-async function getContextData(args: RouteArgsMetadata, ctx: RouterContext<string>, next: Next): Promise<TContextData> {
+    const inputs = await Promise.all(routeArgs.map(async (data) => {
+      if (data.paramType === RouteParamTypes.BODY) {
+        if (!bodyParsed) {
+          cachedBody = await context.request.body.json();
+          bodyParsed = true;
+        }
+        return data.data ? (cachedBody as Record<string, unknown>)[data.data.toString()] : cachedBody;
+      }
+      return await getContextData(data, context, next);
+    }));
+    const parameterCount = handler.length;
+
+    if (parameterCount === inputs.length) {
+      return inputs;
+    }
+
+    if (parameterCount === inputs.length + 1) {
+      return [...inputs, context];
+    }
+
+    throw new Error(`Handler ${handler.name || '<anonymous>'} expects ${parameterCount} parameters, but route mapping resolved ${inputs.length} argument(s). Only an optional trailing ctx parameter is supported.`);
+  }
+
+  if (handler.length === 1) {
+    return [context];
+  }
+
+  if (handler.length > 1) {
+    throw new Error(`Handler ${handler.name || '<anonymous>'} expects ${handler.length} parameters, but no route argument mapping was provided. Use @Get/@Post/... with resolver arguments or accept only ctx as a single parameter.`);
+  }
+
+  return [];
+}
+
+async function getContextData(args: RouteArgResolver, ctx: RouterContext<string>, next: Next): Promise<unknown> {
   const { paramType, data } = args;
   const req = ctx.request;
   const res = ctx.response;

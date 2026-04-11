@@ -1,7 +1,8 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@dx/inject@0.1.22": "0.1.22",
+    "jsr:@needle-di/core@*": "1.1.2",
+    "jsr:@needle-di/core@1.1.2": "1.1.2",
     "jsr:@oak/commons@1": "1.0.1",
     "jsr:@oak/oak@17.2.0": "17.2.0",
     "jsr:@std/assert@1": "1.0.19",
@@ -12,7 +13,7 @@
     "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/fmt@^1.0.5": "1.0.5",
     "jsr:@std/fs@^1.0.11": "1.0.11",
-    "jsr:@std/http@1": "1.0.24",
+    "jsr:@std/http@1": "1.0.25",
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/io@~0.225.2": "0.225.2",
     "jsr:@std/log@0.224.14": "0.224.14",
@@ -20,14 +21,11 @@
     "jsr:@std/path@1": "1.1.4",
     "npm:@types/node@*": "18.16.19",
     "npm:path-to-regexp@^6.3.0": "6.3.0",
-    "npm:reflect-metadata@0.2.2": "0.2.2"
+    "npm:typescript@5.8.3": "5.8.3"
   },
   "jsr": {
-    "@dx/inject@0.1.22": {
-      "integrity": "114edc141980480a6da8690209b953520695590f04e50768a607bbc78afe467c",
-      "dependencies": [
-        "npm:reflect-metadata"
-      ]
+    "@needle-di/core@1.1.2": {
+      "integrity": "74c9453baa0de202446418dde754645c0b96d0d441e78685e9169fb839fcbd32"
     },
     "@oak/commons@1.0.1": {
       "integrity": "889ff210f0b4292591721be07244ecb1b5c118742f5273c70cf30d7cd4184d0c",
@@ -73,8 +71,8 @@
     "@std/fs@1.0.11": {
       "integrity": "ba674672693340c5ebdd018b4fe1af46cb08741f42b4c538154e97d217b55bdd"
     },
-    "@std/http@1.0.24": {
-      "integrity": "4dd59afd7cfd6e2e96e175b67a5a829b449ae55f08575721ec691e5d85d886d4",
+    "@std/http@1.0.25": {
+      "integrity": "577b4252290af1097132812b339fffdd55fb0f4aeb98ff11bdbf67998aa17193",
       "dependencies": [
         "jsr:@std/encoding@^1.0.10"
       ]
@@ -110,17 +108,17 @@
     "path-to-regexp@6.3.0": {
       "integrity": "sha512-Yhpw4T9C6hPpgPeA28us07OJeqZ5EzQTkbfwuhsUg0c237RomFoETJgmp2sa3F/41gfLE6G5cqcYwznmeEeOlQ=="
     },
-    "reflect-metadata@0.2.2": {
-      "integrity": "sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q=="
+    "typescript@5.8.3": {
+      "integrity": "sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==",
+      "bin": true
     }
   },
   "workspace": {
     "dependencies": [
-      "jsr:@dx/inject@0.1.22",
+      "jsr:@needle-di/core@1.1.2",
       "jsr:@oak/oak@17.2.0",
       "jsr:@std/assert@1.0.19",
-      "jsr:@std/log@0.224.14",
-      "npm:reflect-metadata@0.2.2"
+      "jsr:@std/log@0.224.14"
     ]
   }
 }

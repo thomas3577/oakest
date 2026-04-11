@@ -1,119 +1,55 @@
-import { ROUTE_ARGS_METADATA } from '../const.ts';
+import type { Request, Response, RouterContext } from '@oak/oak';
+
 import { RouteParamTypes } from '../enums.ts';
 import { isNil, isString } from '../utils/router.util.ts';
-import type { ParamData, RouteArgsMetadata } from '../types.ts';
+import type { ParamData, TypedRouteArgResolver } from '../types.ts';
 
-function createPipesRouteParamDecorator(paramType: RouteParamTypes) {
-  return (data?: ParamData): ParameterDecorator => (target, key, index) => {
-    const args: RouteArgsMetadata[] = Reflect.getMetadata(ROUTE_ARGS_METADATA, target, key as string | symbol) || [];
-    const hasParamData = isNil(data) || isString(data);
-    const paramData = hasParamData ? data : undefined;
+type Next = () => Promise<unknown>;
 
-    args.push({
+// Type mapping from RouteParamTypes to their concrete return types
+export type RouteParamReturn<TParam extends RouteParamTypes> =
+  TParam extends RouteParamTypes.REQUEST ? Request :
+  TParam extends RouteParamTypes.CONTEXT ? RouterContext<string> :
+  TParam extends RouteParamTypes.RESPONSE ? Response :
+  TParam extends RouteParamTypes.NEXT ? Next :
+  TParam extends RouteParamTypes.BODY ? unknown :
+  TParam extends RouteParamTypes.QUERY ? string | URLSearchParams :
+  TParam extends RouteParamTypes.PARAM ? string | Record<string, string> :
+  TParam extends RouteParamTypes.HEADERS ? string | undefined | Record<string, string> :
+  TParam extends RouteParamTypes.IP ? string :
+  unknown;
+
+export type RouteArgResolverFactory = <T = unknown>(data?: ParamData) => TypedRouteArgResolver<T>;
+
+export type CustomRouteArgResolverFactory = <THandler extends (ctx: RouterContext<string>, data?: ParamData) => unknown>(handler: THandler, data?: ParamData) => TypedRouteArgResolver<Awaited<ReturnType<THandler>>>;
+
+const normalizeParamData = (data?: ParamData): ParamData | undefined => {
+  return isNil(data) || isString(data) ? data : undefined;
+};
+
+function createRouteArgResolver<TParam extends RouteParamTypes>(paramType: TParam) {
+  return (data?: ParamData): TypedRouteArgResolver<RouteParamReturn<TParam>> => {
+    return {
       paramType,
-      index,
-      data: paramData,
-    });
-
-    Reflect.defineMetadata(ROUTE_ARGS_METADATA, args, target, key as string | symbol);
+      data: normalizeParamData(data),
+    };
   };
 }
 
-/**
- * Request decorator
- *
- * @param {string} property - Property for the request
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function Req(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.REQUEST)(property);
-}
+export const req = createRouteArgResolver(RouteParamTypes.REQUEST);
+export const ctx = createRouteArgResolver(RouteParamTypes.CONTEXT);
+export const res = createRouteArgResolver(RouteParamTypes.RESPONSE);
+export const next = createRouteArgResolver(RouteParamTypes.NEXT);
+export const query = createRouteArgResolver(RouteParamTypes.QUERY);
+export const param = createRouteArgResolver(RouteParamTypes.PARAM);
+export const body = createRouteArgResolver(RouteParamTypes.BODY);
+export const headers = createRouteArgResolver(RouteParamTypes.HEADERS);
+export const ip = createRouteArgResolver(RouteParamTypes.IP);
 
-/**
- * Context decorator
- *
- * @param {string} property - Property for the context
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function Ctx(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.CONTEXT)(property);
-}
-
-/**
- * Response decorator
- *
- * @param {string} property - Property for the response
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function Res(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.RESPONSE)(property);
-}
-
-/**
- * Next decorator
- *
- * @param {string} property - Property for the next
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function Next(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.NEXT)(property);
-}
-
-/**
- * Query decorator
- *
- * @param {string} property - Property for the query
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function Query(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.QUERY)(property);
-}
-
-/**
- * Param decorator
- *
- * @param {string} property - Property for the param
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function Param(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.PARAM)(property);
-}
-
-/**
- * Body decorator
- *
- * @param {string} property - Property for the body
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function Body(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.BODY)(property);
-}
-
-/**
- * Headers decorator
- *
- * @param {string} property - Property for the headers
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function Headers(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.HEADERS)(property);
-}
-
-/**
- * IP decorator
- *
- * @param {string} property - Property for the IP
- *
- * @returns {ParameterDecorator} - The request decorator
- */
-export function IP(property?: string): ParameterDecorator {
-  return createPipesRouteParamDecorator(RouteParamTypes.IP)(property);
-}
+export const custom: CustomRouteArgResolverFactory = <THandler extends (ctx: RouterContext<string>, data?: ParamData) => unknown>(handler: THandler, data?: ParamData): TypedRouteArgResolver<Awaited<ReturnType<THandler>>> => {
+  return {
+    paramType: RouteParamTypes.CUSTOM,
+    data: normalizeParamData(data),
+    handler,
+  };
+};
