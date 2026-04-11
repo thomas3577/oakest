@@ -2,7 +2,7 @@ import { createMetadataDecorator, defineMetadata, getMetadata, getOwnMetadata } 
 
 type StandardMetadataDecoratorContext<This = object, Value = unknown> =
   | ClassDecoratorContext
-  | ClassMethodDecoratorContext<This, (this: This, ...args: any[]) => unknown>
+  | ClassMethodDecoratorContext<This, (this: This, ...args: unknown[]) => unknown>
   | ClassGetterDecoratorContext<This, () => Value>
   | ClassSetterDecoratorContext<This, (value: Value) => void>
   | ClassAccessorDecoratorContext<This, Value>
