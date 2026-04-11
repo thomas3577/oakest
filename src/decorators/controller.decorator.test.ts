@@ -6,7 +6,7 @@ import { Get, Post } from './http-methods.decorator.ts';
 import { body, ctx, custom, headers, ip, next, param, query, req, res } from './route-params.decorator.ts';
 import { Controller } from './controller.decorator.ts';
 import { registerMiddlewareMethodDecorator } from '../utils/router.util.ts';
-import type { ControllerClass } from '../types.ts';
+import type { ControllerClass, ParamData } from '../types.ts';
 
 function RuntimeMiddleware<This extends object, Args extends unknown[], Return>(
   _value: (this: This, ...args: Args) => Return,
@@ -17,6 +17,32 @@ function RuntimeMiddleware<This extends object, Args extends unknown[], Return>(
     ctx.response.headers.set('x-middleware', 'ran');
     await next();
     middlewareEvents.push('middleware:after');
+  });
+}
+
+const inheritedMiddlewareEvents: string[] = [];
+
+function BaseRuntimeMiddleware<This extends object, Args extends unknown[], Return>(
+  _value: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+) {
+  registerMiddlewareMethodDecorator(context, async (ctx, next) => {
+    inheritedMiddlewareEvents.push('base:before');
+    ctx.response.headers.set('x-base-middleware', 'ran');
+    await next();
+    inheritedMiddlewareEvents.push('base:after');
+  });
+}
+
+function ChildRuntimeMiddleware<This extends object, Args extends unknown[], Return>(
+  _value: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+) {
+  registerMiddlewareMethodDecorator(context, async (ctx, next) => {
+    inheritedMiddlewareEvents.push('child:before');
+    ctx.response.headers.set('x-child-middleware', 'ran');
+    await next();
+    inheritedMiddlewareEvents.push('child:after');
   });
 }
 
@@ -68,7 +94,7 @@ const middlewareEvents: string[] = [];
 @Controller('tasks')
 class RuntimeController {
   @RuntimeMiddleware
-  @Get(':id', [query<string | null>('filter'), param<string>('id'), custom<string>((routeContext, data) => `${routeContext.params.id}:${String(data)}`, 'extra')])
+  @Get(':id', [query<string | null>('filter'), param<string>('id'), custom((routeContext: RouterContext<string>, data?: ParamData) => `${routeContext.params.id}:${String(data)}`, 'extra')])
   index(
     filter: string | null,
     id: string,
@@ -80,6 +106,32 @@ class RuntimeController {
       filter,
       id,
       customValue,
+    };
+  }
+}
+
+@Controller('inherit-base')
+class BaseInheritedMiddlewareController {
+  @BaseRuntimeMiddleware
+  @Get('shared')
+  shared() {
+    inheritedMiddlewareEvents.push('handler:base');
+
+    return {
+      controller: 'base',
+    };
+  }
+}
+
+@Controller('inherit-child')
+class ChildInheritedMiddlewareController extends BaseInheritedMiddlewareController {
+  @ChildRuntimeMiddleware
+  @Get('shared')
+  override shared() {
+    inheritedMiddlewareEvents.push('handler:child');
+
+    return {
+      controller: 'child',
     };
   }
 }
@@ -163,6 +215,46 @@ Deno.test('Controller routes execute middleware before handlers and resolve cust
     'middleware:before',
     'handler:open:42:42:extra',
     'middleware:after',
+  ]);
+});
+
+Deno.test('Controller decoration clones inherited middleware metadata before appending', async () => {
+  inheritedMiddlewareEvents.length = 0;
+
+  const baseApp = mountController(new BaseInheritedMiddlewareController() as unknown as ControllerClass);
+  const baseResponse = await baseApp.handle(new Request('http://localhost/inherit-base/shared'));
+
+  assertExists(baseResponse);
+  assertEquals(baseResponse.status, 200);
+  assertEquals(baseResponse.headers.get('x-base-middleware'), 'ran');
+  assertEquals(baseResponse.headers.get('x-child-middleware'), null);
+  assertEquals(await baseResponse.json(), {
+    controller: 'base',
+  });
+  assertEquals(inheritedMiddlewareEvents, [
+    'base:before',
+    'handler:base',
+    'base:after',
+  ]);
+
+  inheritedMiddlewareEvents.length = 0;
+
+  const childApp = mountController(new ChildInheritedMiddlewareController() as unknown as ControllerClass);
+  const childResponse = await childApp.handle(new Request('http://localhost/inherit-child/shared'));
+
+  assertExists(childResponse);
+  assertEquals(childResponse.status, 200);
+  assertEquals(childResponse.headers.get('x-base-middleware'), 'ran');
+  assertEquals(childResponse.headers.get('x-child-middleware'), 'ran');
+  assertEquals(await childResponse.json(), {
+    controller: 'child',
+  });
+  assertEquals(inheritedMiddlewareEvents, [
+    'base:before',
+    'child:before',
+    'handler:child',
+    'child:after',
+    'base:after',
   ]);
 });
 

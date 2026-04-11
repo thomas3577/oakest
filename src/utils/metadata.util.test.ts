@@ -3,11 +3,24 @@ import { assertEquals, assertStrictEquals } from '@std/assert';
 import { createMetadataDecorator, defineMetadata, getMetadata, getOwnMetadata } from './metadata.util.ts';
 import './reflect-shim.ts';
 
+type StandardMetadataDecoratorContext<This = object, Value = unknown> =
+  | ClassDecoratorContext
+  | ClassMethodDecoratorContext<This, (this: This, ...args: any[]) => unknown>
+  | ClassGetterDecoratorContext<This, () => Value>
+  | ClassSetterDecoratorContext<This, (value: Value) => void>
+  | ClassAccessorDecoratorContext<This, Value>
+  | ClassFieldDecoratorContext<This, Value>;
+
 type ReflectMetadataApi = typeof Reflect & {
   defineMetadata?: (metadataKey: string | symbol, value: unknown, target: object, propertyKey?: string | symbol) => void;
   getMetadata?: <T>(metadataKey: string | symbol, target: object, propertyKey?: string | symbol) => T | undefined;
   getOwnMetadata?: <T>(metadataKey: string | symbol, target: object, propertyKey?: string | symbol) => T | undefined;
-  metadata?: (metadataKey: string | symbol, value: unknown) => ((target: object, propertyKey?: string | symbol) => void) | undefined;
+  metadata?: {
+    (metadataKey: string | symbol, value: unknown): {
+      (target: object, propertyKey?: string | symbol): void;
+      <This extends object, Value>(value: Value, context: StandardMetadataDecoratorContext<This, Value>): void;
+    };
+  };
 };
 
 const reflectApi = Reflect as ReflectMetadataApi;
@@ -113,4 +126,26 @@ Deno.test('reflect shim metadata() decorator writes through to the shared metada
   shimDecorator?.(MetadataChild.prototype, 'method');
 
   assertEquals(getMetadata(shimKey, MetadataChild.prototype, 'method'), 'shim-decorator');
+});
+
+Deno.test('reflect shim metadata() supports standard decorators on methods and classes', () => {
+  const classKey = Symbol('class-key');
+  const methodKey = Symbol('method-key');
+  const metadataDecorator = reflectApi.metadata as NonNullable<ReflectMetadataApi['metadata']>;
+
+  @metadataDecorator(classKey, 'class-metadata')
+  class MetadataBase {
+    @metadataDecorator(methodKey, 'method-metadata')
+    method() {}
+  }
+
+  class MetadataChild extends MetadataBase {
+    override method() {}
+  }
+
+  assertEquals(getOwnMetadata(classKey, MetadataBase), 'class-metadata');
+  assertEquals(getMetadata(classKey, MetadataChild), 'class-metadata');
+  assertEquals(getOwnMetadata(methodKey, MetadataBase.prototype, 'method'), 'method-metadata');
+  assertEquals(getOwnMetadata(methodKey, MetadataChild.prototype, 'method'), undefined);
+  assertEquals(getMetadata(methodKey, MetadataChild.prototype, 'method'), 'method-metadata');
 });

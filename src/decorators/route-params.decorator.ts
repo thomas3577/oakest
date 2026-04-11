@@ -6,7 +6,7 @@ import type { ParamData, TypedRouteArgResolver } from '../types.ts';
 
 export type RouteArgResolverFactory = <T = unknown>(data?: ParamData) => TypedRouteArgResolver<T>;
 
-export type CustomRouteArgResolverFactory = <T = unknown>(handler: (ctx: RouterContext<string>, data?: ParamData) => unknown, data?: ParamData) => TypedRouteArgResolver<T>;
+export type CustomRouteArgResolverFactory = <THandler extends (ctx: RouterContext<string>, data?: ParamData) => unknown>(handler: THandler, data?: ParamData) => TypedRouteArgResolver<Awaited<ReturnType<THandler>>>;
 
 const normalizeParamData = (data?: ParamData): ParamData | undefined => {
   return isNil(data) || isString(data) ? data : undefined;
@@ -31,7 +31,7 @@ export const body: RouteArgResolverFactory = createRouteArgResolver(RouteParamTy
 export const headers: RouteArgResolverFactory = createRouteArgResolver(RouteParamTypes.HEADERS);
 export const ip: RouteArgResolverFactory = createRouteArgResolver(RouteParamTypes.IP);
 
-export const custom: CustomRouteArgResolverFactory = <T = unknown>(handler: (ctx: RouterContext<string>, data?: ParamData) => unknown, data?: ParamData): TypedRouteArgResolver<T> => {
+export const custom: CustomRouteArgResolverFactory = <THandler extends (ctx: RouterContext<string>, data?: ParamData) => unknown>(handler: THandler, data?: ParamData): TypedRouteArgResolver<Awaited<ReturnType<THandler>>> => {
   return {
     paramType: RouteParamTypes.CUSTOM,
     data: normalizeParamData(data),

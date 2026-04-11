@@ -1,6 +1,7 @@
 import { assertEquals, assertExists } from '@std/assert';
 
 import { RouteParamTypes } from '../enums.ts';
+import type { TypedRouteArgResolver } from '../types.ts';
 import { body, ctx, custom, headers, ip, next, param, query, req, res } from './route-params.decorator.ts';
 
 Deno.test('route arg resolvers create the expected metadata shape', () => {
@@ -22,10 +23,23 @@ Deno.test('route arg resolvers ignore non-string custom data payloads', () => {
 
 Deno.test('custom() creates a custom resolver', () => {
   const handler = () => 'ok';
-  const resolver = custom<string>(handler, 'payload');
+  const resolver = custom(handler, 'payload');
 
   assertExists(resolver.handler);
   assertEquals(resolver.paramType, RouteParamTypes.CUSTOM);
   assertEquals(resolver.data, 'payload');
   assertEquals(resolver.handler, handler);
+});
+
+Deno.test('custom() binds resolver typing to the handler return type', () => {
+  const syncResolver: TypedRouteArgResolver<string> = custom(() => 'ok');
+  const asyncResolver: TypedRouteArgResolver<number> = custom(async () => 42);
+
+  assertEquals(syncResolver.paramType, RouteParamTypes.CUSTOM);
+  assertEquals(asyncResolver.paramType, RouteParamTypes.CUSTOM);
+
+  // @ts-expect-error custom() infers the resolver type from the handler return value.
+  const invalidResolver: TypedRouteArgResolver<number> = custom(() => 'ok');
+
+  void invalidResolver;
 });

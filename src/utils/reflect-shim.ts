@@ -1,6 +1,17 @@
 import { createMetadataDecorator, defineMetadata, getMetadata, getOwnMetadata } from './metadata.util.ts';
 
-type MetadataDecorator = (target: object, propertyKey?: string | symbol) => void;
+type StandardMetadataDecoratorContext<This = object, Value = unknown> =
+  | ClassDecoratorContext
+  | ClassMethodDecoratorContext<This, (this: This, ...args: any[]) => unknown>
+  | ClassGetterDecoratorContext<This, () => Value>
+  | ClassSetterDecoratorContext<This, (value: Value) => void>
+  | ClassAccessorDecoratorContext<This, Value>
+  | ClassFieldDecoratorContext<This, Value>;
+
+type MetadataDecorator = {
+  (target: object, propertyKey?: string | symbol): void;
+  <This extends object, Value>(value: Value, context: StandardMetadataDecoratorContext<This, Value>): void;
+};
 
 type ReflectMetadataApi = typeof Reflect & {
   defineMetadata?: (metadataKey: string | symbol, value: unknown, target: object, propertyKey?: string | symbol) => void;

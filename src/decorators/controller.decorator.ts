@@ -7,7 +7,7 @@ import * as log from '@std/log';
 import { RouteParamTypes } from '../enums.ts';
 import { METHOD_METADATA, MIDDLEWARE_METADATA } from '../const.ts';
 import type { ActionMetadata, ControllerClass, HTTPMethods, RouteArgResolver } from '../types.ts';
-import { defineMetadata, getMetadata } from '../utils/metadata.util.ts';
+import { defineMetadata, getMetadata, getOwnMetadata } from '../utils/metadata.util.ts';
 
 type Next = () => Promise<unknown>;
 type ControllerConstructor = new (...instance: never[]) => object;
@@ -35,8 +35,8 @@ export function Controller<T extends ControllerConstructor>(options?: string): (
     }
 
     for (const registration of middlewareRegistrations) {
-      const handlers = getMetadata<MiddlewareHandler[]>(MIDDLEWARE_METADATA, fn.prototype, registration.functionName) ?? [];
-      handlers.push(registration.handler);
+      const currentHandlers = getOwnMetadata<MiddlewareHandler[]>(MIDDLEWARE_METADATA, fn.prototype, registration.functionName) ?? [];
+      const handlers = [...currentHandlers, registration.handler];
       defineMetadata(MIDDLEWARE_METADATA, handlers, fn.prototype, registration.functionName);
     }
 
