@@ -1,23 +1,28 @@
-# Oak Decorators
+# Oakest
 
 [![JSR Version](https://jsr.io/badges/@dx/oakest)](https://jsr.io/@dx/oakest)
 [![JSR Score](https://jsr.io/badges/@dx/oakest/score)](https://jsr.io/@dx/oakest/score)
 [![ci](https://github.com/thomas3577/oakest/actions/workflows/deno.yml/badge.svg)](https://github.com/thomas3577/oakest/actions/workflows/deno.yml)
 
-**Originally based on** [biga816/oak-decorators](https://github.com/biga816/oak-decorators)
+Oakest is a decorator-driven application toolkit for Deno's [oak](https://github.com/oakserver/oak).
 
-NestJS-style decorators library for Deno's [oak](https://github.com/oakserver/oak).
+It provides controllers, modules, explicit dependency injection, middleware decorators, and route argument resolvers in a small API surface built around standard decorators.
 
-## TL;DR Key features
+Current status: `0.1.0-alpha.1`
 
-- **Dependency Injection**: Simplify your code and testing process by injecting dependencies.
-- **Modular Structure**: Organize your code into modules for better scalability and maintainability.
-- **Decorators**: Configure route endpoint methods in a declarative style.
-- **Controller Support**: Define your routes in a declarative way using controllers.
-- **Custom Middleware Support**: Create middleware decorators to control access and flow to routes
-- **Route Argument Resolvers**: Map params, body, query, headers, request, response, or custom values directly on route decorators
+The current API uses standard decorators, explicit dependency injection via `inject(...)`, and route argument resolvers on `@Get/@Post/...`.
 
-## Usage
+Project background: Oakest was originally based on [biga816/oak-decorators](https://github.com/biga816/oak-decorators).
+
+## Highlights
+
+- **Controllers and Modules**: Organize Oak routes in a clear application structure.
+- **Explicit Dependency Injection**: Declare dependencies with `inject(...)` instead of emitted type metadata.
+- **Standard Decorators**: Build on the current TC39 decorator model instead of legacy experimental decorators.
+- **Middleware Decorators**: Attach reusable request guards and flow control directly to route methods.
+- **Route Argument Resolvers**: Map params, body, query, headers, request, response, context, or custom values directly on route decorators.
+
+## Quick Start
 
 Define controllers to handle HTTP endpoints
 
@@ -73,45 +78,30 @@ Run your app and the following endpoints will be available:
 - `/api/v1/util/user-agent`
 - `/api/v1/util/multiply?f1=2&f2=4`
 
-## Breaking Changes
+## Upgrade Notes
 
-The current release includes breaking changes in DI and route argument handling.
+If you are upgrading from older Oakest releases, these are the important changes:
 
 - `reflect-metadata` is no longer used.
 - `emitDecoratorMetadata` is no longer required.
-- Constructor dependency injection no longer works from parameter types alone.
 - Constructor dependencies must now be declared explicitly with `inject(...)`.
 - `@Controller({ injectables: [...] })` has been removed.
-- `@Injectable({ isSingleton: false })` is no longer supported in the Needle-based DI flow.
+- `@Injectable({ isSingleton: false })` is no longer supported in the current Needle-based DI flow.
 - Parameter decorators like `@Body()`, `@Param()`, `@Query()`, `@Headers()`, `@Req()`, and `@Ctx()` have been removed.
-- Route handler inputs must now be declared on `@Get/@Post/...` via resolver arrays like `@Post(':id', [param('id'), body()])`.
-- Oakest now uses standard decorators; `experimentalDecorators` is no longer required in `deno.json`.
-- Custom method decorators that integrate with Oakest middleware must use the standard decorator context form.
+- Route inputs now belong on `@Get/@Post/...` via resolver arrays like `@Post(':id', [param('id'), body()])`.
+- Custom middleware decorators must use the standard decorator context form `(_value, context)`.
+- `experimentalDecorators` is no longer needed in `deno.json`.
 
-If your code relied on implicit constructor injection, update constructors before upgrading.
+Migration checklist:
 
-## Migration
+1. Replace implicit constructor injection with `inject(...)` default values.
+2. Keep all injectable implementations in the corresponding module `providers` arrays.
+3. Remove `@Controller({ injectables: [...] })` and move token selection into explicit constructor injection.
+4. Replace parameter decorators with route argument resolvers on `@Get/@Post/...`.
+5. Remove code or config that depended on `reflect-metadata` or emitted constructor metadata.
+6. Migrate custom middleware decorators from `(target, methodName)` to `(_value, context)` and call `registerMiddlewareMethodDecorator(context, handler)`.
 
-### Constructor Injection
-
-Before:
-
-```typescript
-import { Controller, Get } from '@dx/oakest';
-import { UsersService } from './users.service.ts';
-
-@Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
-
-  @Get()
-  getAllUsers() {
-    return this.usersService.getAllUsers();
-  }
-}
-```
-
-After:
+Constructor migration example:
 
 ```typescript
 import { Controller, Get, inject } from '@dx/oakest';
@@ -128,80 +118,27 @@ export class UsersController {
 }
 ```
 
-### Token-Based Injection
-
-Before, token-based controller injection could be modeled indirectly through Oakest-specific metadata. That path has been removed.
-
-After:
+Route argument migration example:
 
 ```typescript
-import { inject, Injectable } from '@dx/oakest';
+import { Controller, Get, param, query } from '@dx/oakest';
 
-const LOGGER = Symbol('LOGGER');
-
-@Injectable({ implementing: LOGGER })
-export class ConsoleLogger {
-  info(message: string) {
-    console.log(message);
+@Controller('users')
+export class UsersController {
+  @Get(':id', [param<string>('id'), query<string | null>('expand')])
+  findOne(id: string, expand: string | null) {
+    return { id, expand };
   }
 }
-
-export class UsersService {
-  constructor(private readonly logger = inject<ConsoleLogger>(LOGGER)) {}
-}
 ```
 
-### Module Providers
+Common upgrade failures:
 
-This part does not change: injectable classes still need to be present in the module `providers` array.
+- `No provider(s) found`: the dependency is requested with `inject(...)`, but the implementation is missing from the module `providers` array.
+- Token-based injection does not resolve: the provider is missing `@Injectable({ implementing: TOKEN })`, or the constructor is not using `inject<T>(TOKEN)`.
+- Constructor injection silently stopped working after the upgrade: the constructor was not converted to explicit `inject(...)` style.
 
-```typescript
-@Module({
-  controllers: [UsersController],
-  providers: [UsersService, ConsoleLogger],
-})
-export class UsersModule {}
-```
-
-### Removed Controller Option
-
-Before:
-
-```typescript
-@Controller({
-  path: 'users',
-  injectables: [SOME_TOKEN],
-})
-export class UsersController {}
-```
-
-After:
-
-```typescript
-@Controller('users')
-export class UsersController {}
-```
-
-Move the dependency selection into explicit constructor injection instead of controller metadata.
-
-### Upgrade Guide
-
-If you are upgrading an existing app, use this order:
-
-1. Update every constructor-injected dependency from `constructor(private readonly service: Service)` to `constructor(private readonly service = inject(Service))`.
-2. Keep all injectable classes in the corresponding module `providers` arrays.
-3. Remove any use of `@Controller({ injectables: [...] })` and move that selection logic into explicit constructor injection.
-4. Replace parameter decorators with route argument resolvers on `@Get/@Post/...`.
-5. Remove any code or configuration that depended on `reflect-metadata` or emitted constructor metadata.
-6. If you have custom Oakest middleware decorators, migrate them from `(target, methodName)` to `(_value, context)` and call `registerMiddlewareMethodDecorator(context, handler)`.
-
-Typical failure modes after upgrading:
-
-- `No provider(s) found`: the dependency is being requested with `inject(...)`, but the implementation is missing from the module `providers` array.
-- token-based injection does not resolve: the provider is missing `@Injectable({ implementing: TOKEN })`, or the constructor is not using `inject<T>(TOKEN)`.
-- constructor injection silently stopped working after the upgrade: the constructor was not converted to the explicit `inject(...)` style.
-
-## Docs
+## API Overview
 
 ### Modules
 
@@ -351,27 +288,7 @@ import { MockUserService, UserService } from './sample.service.ts';
 export class SampleModule {}
 ```
 
-### Explicit Injection
-
-Oakest no longer relies on `reflect-metadata` or emitted constructor type metadata for dependency injection. Constructor dependencies are declared explicitly with Needle's `inject()` helper.
-
-```typescript
-import { Controller, Get, inject } from '@dx/oakest';
-
-import { UsersService } from './users.service.ts';
-
-@Controller('users')
-export class UsersController {
-  constructor(private readonly usersService = inject(UsersService)) {}
-
-  @Get()
-  getAllUsers() {
-    return this.usersService.getAllUsers();
-  }
-}
-```
-
-Notes:
+Dependency injection notes:
 
 - Dependencies must be requested explicitly in constructor default values.
 - Providers still need to be registered in your module's `providers` array.
