@@ -1,3 +1,4 @@
+/** Kinds of values a route argument resolver can provide. */
 export enum RouteParamTypes {
   REQUEST,
   CONTEXT,

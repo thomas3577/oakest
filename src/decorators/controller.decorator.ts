@@ -4,11 +4,10 @@ import * as log from '@std/log';
 
 import { RouteParamTypes } from '../enums.ts';
 import { METHOD_METADATA, MIDDLEWARE_METADATA } from '../const.ts';
-import type { ActionMetadata, ControllerClass, HTTPMethods, RouteArgResolver } from '../types.ts';
+import type { ActionMetadata, ControllerClass, ControllerConstructor, HTTPMethods, RouteArgResolver } from '../types.ts';
 import { defineMetadata, getMetadata, getOwnMetadata } from '../utils/metadata.util.ts';
 
 type Next = () => Promise<unknown>;
-type ControllerConstructor = new (...instance: never[]) => object;
 type RouterMethodInvoker = Router & Record<HTTPMethods, (path: string, ...handlers: unknown[]) => Router>;
 type ControllerMethodMap = Record<string, (...args: unknown[]) => unknown>;
 type MiddlewareHandler = (ctx: RouterContext<string>, next: Next) => void | Promise<void>;
