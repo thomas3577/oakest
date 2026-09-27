@@ -1,5 +1,3 @@
-import '../utils/reflect-shim.ts';
-
 import { MODULE_METADATA } from '../const.ts';
 import type { ClassConstructor, CreateRouterOption } from '../types.ts';
 import { defineMetadata } from '../utils/metadata.util.ts';

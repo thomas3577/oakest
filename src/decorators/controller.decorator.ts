@@ -1,5 +1,3 @@
-import '../utils/reflect-shim.ts';
-
 import { Router } from '@oak/oak';
 import type { RouterContext } from '@oak/oak';
 import * as log from '@std/log';
@@ -170,11 +168,6 @@ async function getContextData(args: RouteArgResolver, ctx: RouterContext<string>
       const params = ctx.params;
 
       return data ? params[data.toString()] : params;
-    }
-    case RouteParamTypes.BODY: {
-      const value = await req.body.json();
-
-      return data ? value[data.toString()] : value;
     }
     case RouteParamTypes.HEADERS: {
       const header: Headers = req.headers;
