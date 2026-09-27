@@ -4,7 +4,7 @@
 [![JSR Score](https://jsr.io/badges/@dx/oakest/score)](https://jsr.io/@dx/oakest/score)
 [![ci](https://github.com/thomas3577/oakest/actions/workflows/deno.yml/badge.svg)](https://github.com/thomas3577/oakest/actions/workflows/deno.yml)
 
-> ⚠️ **EXPERIMENTAL**: This library is in early development and highly experimental. APIs may change without notice. Not recommended for production use.
+> **Note**: Oakest is pre-1.0. Minor releases may contain breaking changes; pin your version.
 
 Oakest is a decorator-driven application toolkit for Deno's [oak](https://github.com/oakserver/oak).
 
@@ -82,7 +82,7 @@ Run your app and the following endpoints will be available:
 
 If you are upgrading from older Oakest releases, these are the important changes:
 
-- `reflect-metadata` is no longer used.
+- `reflect-metadata` is no longer used, and Oakest no longer patches the global `Reflect` object (`Reflect.defineMetadata`, `Reflect.getMetadata`, `Reflect.metadata`, ...).
 - `emitDecoratorMetadata` is no longer required.
 - Constructor dependencies must now be declared explicitly with `inject(...)`.
 - `@Controller({ injectables: [...] })` has been removed.

@@ -1,5 +1,3 @@
-import '../utils/reflect-shim.ts';
-
 import { METHOD_METADATA } from '../const.ts';
 import type { ActionMetadata, HTTPMethods, RouteArgResolver } from '../types.ts';
 

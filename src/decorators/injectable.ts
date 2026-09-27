@@ -1,5 +1,3 @@
-import '../utils/reflect-shim.ts';
-
 import { INJECTABLE_OPTIONS_METADATA, INJECTOR_INTERFACES_METADATA } from '../const.ts';
 import { inject } from '../utils/injector.util.ts';
 import { defineMetadata } from '../utils/metadata.util.ts';

@@ -1,5 +1,3 @@
-import '../utils/reflect-shim.ts';
-
 import { Router } from '@oak/oak';
 import type { RouterContext } from '@oak/oak';
 import * as log from '@std/log';
