@@ -1,13 +1,12 @@
 import { Router } from '@oak/oak';
-import type { Context, Middleware, Next } from '@oak/oak';
+import type { Context, Middleware } from '@oak/oak';
 
 import { MIDDLEWARE_METADATA, MODULE_METADATA } from '../const.ts';
-import type { ClassConstructor, ControllerClass, CreateRouterOption } from '../types.ts';
+import type { ClassConstructor, ControllerClass, CreateRouterOption, MiddlewareHandler } from '../types.ts';
 import { createInjector } from './injector.util.ts';
 import { getMetadata } from './metadata.util.ts';
 
 type Injector = ReturnType<typeof createInjector>;
-type MiddlewareHandler = (ctx: Context, next: Next) => void | Promise<void>;
 type DecoratorMetadataBag = Record<PropertyKey, unknown>;
 type MiddlewareRegistration = { functionName: string; handler: MiddlewareHandler };
 

@@ -1,11 +1,7 @@
 import { METHOD_METADATA } from '../const.ts';
-import type { ActionMetadata, HTTPMethods, RouteArgResolver } from '../types.ts';
+import type { ActionMetadata, HTTPMethods, RouteArgResolver, RouteMethodDecorator } from '../types.ts';
 
 type DecoratorMetadataBag = Record<PropertyKey, unknown>;
-type RouteMethodDecorator = <This, Args extends unknown[], Return>(
-  value: (this: This, ...args: Args) => Return,
-  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
-) => void;
 
 /**
  * HTTP Method GET

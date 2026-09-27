@@ -2,8 +2,11 @@ import { INJECTABLE_OPTIONS_METADATA, INJECTOR_INTERFACES_METADATA } from '../co
 import { inject } from '../utils/injector.util.ts';
 import { defineMetadata } from '../utils/metadata.util.ts';
 
+/** Token(s) an injectable provides, resolved with `inject<T>(TOKEN)`. */
 export type Implementing = string | symbol | string[] | symbol[];
+/** Options with the tokens an injectable implements. */
 export type ImplementingOptions = { implementing?: Implementing };
+/** Options for the `@Injectable()` decorator. `isSingleton: false` is not supported. */
 export type InjectableOptions = ImplementingOptions & { isSingleton?: boolean };
 
 export { inject };
