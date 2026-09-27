@@ -169,6 +169,29 @@ class MappedArgsController {
   }
 }
 
+@Controller('body')
+class BodyController {
+  @Post('', [body<string>('name'), body<{ name: string; age: number }>(), body<number>('age')])
+  create(name: string, requestBody: { name: string; age: number }, age: number) {
+    return { name, requestBody, age };
+  }
+}
+
+Deno.test('Controller resolves multiple body() resolvers from a single parsed body', async () => {
+  const app = mountController(new BodyController() as unknown as ControllerClass);
+  const response = await app.handle(
+    new Request('http://localhost/body', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'oakest', age: 3 }),
+    }),
+  );
+
+  assertExists(response);
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), { name: 'oakest', requestBody: { name: 'oakest', age: 3 }, age: 3 });
+});
+
 Deno.test('Controller init() composes prefixes and injects standard route params', async () => {
   const app = mountController(new ParameterController() as unknown as ControllerClass, 'api');
   const response = await app.handle(

@@ -169,11 +169,6 @@ async function getContextData(args: RouteArgResolver, ctx: RouterContext<string>
 
       return data ? params[data.toString()] : params;
     }
-    case RouteParamTypes.BODY: {
-      const value = await req.body.json();
-
-      return data ? value[data.toString()] : value;
-    }
     case RouteParamTypes.HEADERS: {
       const header: Headers = req.headers;
 
