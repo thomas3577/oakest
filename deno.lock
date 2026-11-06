@@ -2,22 +2,23 @@
   "version": "5",
   "specifiers": {
     "jsr:@needle-di/core@1.2.1": "1.2.1",
-    "jsr:@oak/commons@1": "1.0.1",
-    "jsr:@oak/oak@17.2.0": "17.2.0",
+    "jsr:@oak/commons@1": "1.0.2",
+    "jsr:@oak/oak@17.2.2": "17.2.2",
     "jsr:@std/assert@1": "1.0.19",
     "jsr:@std/assert@1.0.19": "1.0.19",
     "jsr:@std/bytes@1": "1.0.6",
-    "jsr:@std/crypto@1": "1.0.5",
-    "jsr:@std/encoding@1": "1.0.10",
-    "jsr:@std/encoding@^1.0.10": "1.0.10",
+    "jsr:@std/crypto@1": "1.1.0",
+    "jsr:@std/encoding@1": "1.0.11",
+    "jsr:@std/encoding@^1.0.11": "1.0.11",
     "jsr:@std/fmt@^1.0.5": "1.0.5",
     "jsr:@std/fs@^1.0.11": "1.0.11",
-    "jsr:@std/http@1": "1.0.25",
-    "jsr:@std/internal@^1.0.12": "1.0.12",
+    "jsr:@std/http@1": "1.1.4",
+    "jsr:@std/internal@^1.0.12": "1.0.14",
+    "jsr:@std/internal@^1.0.14": "1.0.14",
     "jsr:@std/io@~0.225.2": "0.225.2",
     "jsr:@std/log@0.224.14": "0.224.14",
     "jsr:@std/media-types@1": "1.1.0",
-    "jsr:@std/path@1": "1.1.4",
+    "jsr:@std/path@1": "1.1.6",
     "npm:@types/node@*": "18.16.19",
     "npm:path-to-regexp@^6.3.0": "6.3.0",
     "npm:typescript@5.8.3": "5.8.3"
@@ -26,8 +27,8 @@
     "@needle-di/core@1.2.1": {
       "integrity": "fa6491594d66754f7793abba982a2ddba23eea9129ccdc7f6f66efcad1f56eb2"
     },
-    "@oak/commons@1.0.1": {
-      "integrity": "889ff210f0b4292591721be07244ecb1b5c118742f5273c70cf30d7cd4184d0c",
+    "@oak/commons@1.0.2": {
+      "integrity": "8f7d8581b8c769acebbd196b1729991563ec184c8ed70a0710aba8b471a53a52",
       "dependencies": [
         "jsr:@std/assert@1",
         "jsr:@std/bytes",
@@ -37,8 +38,8 @@
         "jsr:@std/media-types"
       ]
     },
-    "@oak/oak@17.2.0": {
-      "integrity": "938537a92fc7922a46a9984696c65fb189c9baad164416ac3e336768a9ff0cd1",
+    "@oak/oak@17.2.2": {
+      "integrity": "e302b67753b8dca51da9d9c9244036cd95a1852ffa1c3dda857818b6e3066553",
       "dependencies": [
         "jsr:@oak/commons",
         "jsr:@std/assert@1",
@@ -52,17 +53,17 @@
     "@std/assert@1.0.19": {
       "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
       "dependencies": [
-        "jsr:@std/internal"
+        "jsr:@std/internal@^1.0.12"
       ]
     },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
     },
-    "@std/crypto@1.0.5": {
-      "integrity": "0dcfbb319fe0bba1bd3af904ceb4f948cde1b92979ec1614528380ed308a3b40"
+    "@std/crypto@1.1.0": {
+      "integrity": "b8d6d0a6377a32b213af2661ed7bf1062d94feac0c57def5526a8e74a95c3ec8"
     },
-    "@std/encoding@1.0.10": {
-      "integrity": "8783c6384a2d13abd5e9e87a7ae0520a30e9f56aeeaa3bdf910a3eaaf5c811a1"
+    "@std/encoding@1.0.11": {
+      "integrity": "e7cef2f0b3153bccc17431e7c864a1de03a4b6d9647389c43e08aaa775d37385"
     },
     "@std/fmt@1.0.5": {
       "integrity": "0cfab43364bc36650d83c425cd6d99910fc20c4576631149f0f987eddede1a4d"
@@ -70,14 +71,14 @@
     "@std/fs@1.0.11": {
       "integrity": "ba674672693340c5ebdd018b4fe1af46cb08741f42b4c538154e97d217b55bdd"
     },
-    "@std/http@1.0.25": {
-      "integrity": "577b4252290af1097132812b339fffdd55fb0f4aeb98ff11bdbf67998aa17193",
+    "@std/http@1.1.4": {
+      "integrity": "4f1575226ca7c0df1df38b26d50265fed30869b2a63ab867edc5b92492150c8c",
       "dependencies": [
-        "jsr:@std/encoding@^1.0.10"
+        "jsr:@std/encoding@^1.0.11"
       ]
     },
-    "@std/internal@1.0.12": {
-      "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
+    "@std/internal@1.0.14": {
+      "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
     },
     "@std/io@0.225.2": {
       "integrity": "3c740cd4ee4c082e6cfc86458f47e2ab7cb353dc6234d5e9b1f91a2de5f4d6c7"
@@ -93,10 +94,10 @@
     "@std/media-types@1.1.0": {
       "integrity": "c9d093f0c05c3512932b330e3cc1fe1d627b301db33a4c2c2185c02471d6eaa4"
     },
-    "@std/path@1.1.4": {
-      "integrity": "1d2d43f39efb1b42f0b1882a25486647cb851481862dc7313390b2bb044314b5",
+    "@std/path@1.1.6": {
+      "integrity": "c68485c2a4dfbb5ae3cc74fae4e8c4e5d874cf8a8ed12927917235c758b46cbe",
       "dependencies": [
-        "jsr:@std/internal"
+        "jsr:@std/internal@^1.0.14"
       ]
     }
   },
@@ -115,7 +116,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@needle-di/core@1.2.1",
-      "jsr:@oak/oak@17.2.0",
+      "jsr:@oak/oak@17.2.2",
       "jsr:@std/assert@1.0.19",
       "jsr:@std/log@0.224.14"
     ]
